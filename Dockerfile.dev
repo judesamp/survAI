@@ -1,0 +1,54 @@
+# syntax=docker/dockerfile:1
+# Development Dockerfile for servAI
+
+ARG RUBY_VERSION=3.2.2
+FROM docker.io/library/ruby:$RUBY_VERSION
+
+# Install dependencies
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+    build-essential \
+    curl \
+    git \
+    libpq-dev \
+    libyaml-dev \
+    libvips \
+    nodejs \
+    npm \
+    postgresql-client \
+    vim \
+    && rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+# Set working directory
+WORKDIR /rails
+
+# Set development environment
+ENV RAILS_ENV=development \
+    BUNDLE_PATH=/usr/local/bundle \
+    BUNDLE_WITHOUT=production \
+    RAILS_LOG_TO_STDOUT=true \
+    PATH="/rails/bin:${PATH}"
+
+# Install bundler
+RUN gem install bundler
+
+# Copy Gemfile and install gems
+COPY Gemfile Gemfile.lock ./
+RUN bundle install && bundle binstubs --all
+
+# Copy package.json if it exists and install node packages
+COPY package*.json ./
+RUN if [ -f "package.json" ]; then npm install; fi
+
+# Copy the rest of the application
+COPY . .
+
+# Create and set permissions for necessary directories
+RUN mkdir -p tmp/pids tmp/cache tmp/sockets log && \
+    chmod -R 755 tmp log
+
+# Expose port 3000 for Rails server
+EXPOSE 3000
+
+# Default command
+CMD ["bash"]

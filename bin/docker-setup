@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🚀 Setting up servAI Docker development environment..."
+
+# Build the Docker images
+echo "📦 Building Docker images..."
+docker-compose build
+
+# Start the services
+echo "🔧 Starting services..."
+docker-compose up -d db redis
+
+# Wait for database to be ready
+echo "⏳ Waiting for database to be ready..."
+sleep 5
+
+# Create and migrate the database
+echo "🗄️ Setting up database..."
+docker-compose run --rm web rails db:create
+docker-compose run --rm web rails db:migrate
+
+# Seed the database if seeds exist
+if [ -f "db/seeds.rb" ] && [ -s "db/seeds.rb" ]; then
+  echo "🌱 Seeding database..."
+  docker-compose run --rm web rails db:seed
+fi
+
+echo "✅ Setup complete!"
+echo ""
+echo "To start the application, run:"
+echo "  docker-compose up"
+echo ""
+echo "Or run in detached mode:"
+echo "  docker-compose up -d"
+echo ""
+echo "The application will be available at http://localhost:3001"
