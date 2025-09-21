@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Development Dockerfile for servAI
+# Development Dockerfile for survAI
 
 ARG RUBY_VERSION=3.2.2
 FROM docker.io/library/ruby:$RUBY_VERSION

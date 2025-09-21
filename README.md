@@ -1,11 +1,11 @@
-# servAI
+# survAI
 
 A Rails application with Docker development environment for quick onboarding.
 
 ## 🚀 Quick Start (TL;DR)
 
 ```bash
-git clone [repository-url] && cd servAI
+git clone [repository-url] && cd survAI
 cp .env.example .env
 chmod +x bin/docker-setup bin/docker-dev
 bin/docker-setup
@@ -39,7 +39,7 @@ Before you begin, ensure you have the following installed on your machine:
 1. **Clone the repository:**
 ```bash
 git clone [repository-url]
-cd servAI
+cd survAI
 ```
 
 2. **Copy environment variables:**

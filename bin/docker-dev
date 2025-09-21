@@ -85,7 +85,7 @@ case "$1" in
     ;;
 
   *)
-    echo "servAI Docker Development Helper"
+    echo "survAI Docker Development Helper"
     echo ""
     echo "Usage: bin/docker-dev [command] [options]"
     echo ""
