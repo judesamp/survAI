@@ -1,0 +1,43 @@
+<div class="bg-white shadow overflow-hidden sm:rounded-lg" id="questions_list">
+  <div class="px-4 py-5 sm:p-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Survey Questions (<%= questions.count %>)</h3>
+
+    <% if questions.any? %>
+      <div class="space-y-4">
+        <% questions.each_with_index do |question, index| %>
+          <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-medium text-gray-500">#<%= index + 1 %></span>
+                  <p class="text-sm font-medium text-gray-900"><%= question.question_text %></p>
+                  <% if question.required? %>
+                    <span class="text-xs text-red-500">*Required</span>
+                  <% end %>
+                </div>
+                <p class="mt-1 text-sm text-gray-500">
+                  Type: <%= question.question_type.humanize %>
+                  <% if question.options.any? %>
+                    • Options: <%= question.options.join(", ") %>
+                  <% end %>
+                </p>
+              </div>
+              <div class="flex items-center gap-2 ml-4">
+                <% if index > 0 %>
+                  <%= button_to "↑", move_up_survey_question_path(survey, question), method: :patch, class: "text-gray-400 hover:text-gray-600" %>
+                <% end %>
+                <% if index < questions.count - 1 %>
+                  <%= button_to "↓", move_down_survey_question_path(survey, question), method: :patch, class: "text-gray-400 hover:text-gray-600" %>
+                <% end %>
+                <%= link_to "Edit", edit_survey_question_path(survey, question), class: "text-indigo-600 hover:text-indigo-900 text-sm" %>
+                <%= button_to "Delete", survey_question_path(survey, question), method: :delete, data: { confirm: "Are you sure?" }, class: "text-red-600 hover:text-red-900 text-sm ml-2" %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-gray-500 text-center py-8">No questions added yet. Add your first question above!</p>
+    <% end %>
+  </div>
+</div>

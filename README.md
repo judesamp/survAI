@@ -13,6 +13,69 @@ docker-compose up
 ```
 → Open http://localhost:3001
 
+## 🤖 AI Setup (Required for Survey Generation)
+
+SurvAI uses Ollama to generate surveys with AI. You'll need to install Ollama and download models to use the AI features.
+
+### Install Ollama
+
+**macOS:**
+```bash
+curl -fsSL https://ollama.ai/install.sh | sh
+# Or with Homebrew
+brew install ollama
+```
+
+**Windows:**
+Download and run the installer from [https://ollama.ai/download](https://ollama.ai/download)
+
+**Linux:**
+```bash
+curl -fsSL https://ollama.ai/install.sh | sh
+```
+
+### Download AI Models
+
+After installing Ollama, download the models used by SurvAI:
+
+```bash
+# Fast model (2GB) - Good for quick testing
+ollama pull llama3.2:3b
+
+# Better model (4.7GB) - Higher quality responses
+ollama pull llama3.1:8b
+
+# Alternative model (1.9GB) - Good balance
+ollama pull qwen2.5:3b
+```
+
+### Start Ollama
+
+```bash
+# Start Ollama server (required for AI features)
+ollama serve
+```
+
+Keep this running in a separate terminal while developing.
+
+### Configure Model (Optional)
+
+By default, SurvAI uses `llama3.2:3b`. To use a different model:
+
+```bash
+# In your .env file or environment
+export OLLAMA_MODEL="llama3.1:8b"
+# Or
+export OLLAMA_MODEL="qwen2.5:3b"
+```
+
+### Verify AI Setup
+
+1. Start the application: `docker-compose up`
+2. Go to http://localhost:3001/generate
+3. Try generating a survey with a prompt like "Create a customer satisfaction survey for my restaurant"
+4. If it works, you'll see an AI-generated survey. If Ollama isn't running, it will fall back to predefined templates.
+
 ## Tech Stack
 
 - Ruby 3.2.2
@@ -20,6 +83,7 @@ docker-compose up
 - PostgreSQL 17
 - Redis 7
 - Tailwind CSS
+- Ollama (for AI survey generation)
 
 ## Getting Started on a New Machine
 
@@ -33,6 +97,7 @@ Before you begin, ensure you have the following installed on your machine:
   - [Linux](https://docs.docker.com/desktop/install/linux-install/)
 - **Git** for version control
 - A code editor (VS Code, RubyMine, etc.)
+- **Ollama** for AI survey generation (see AI Setup section below)
 
 ### Initial Setup (First Time Only)
 
@@ -256,6 +321,36 @@ bin/docker-dev reset
 # Without Docker (not recommended)
 rails db:drop db:create db:migrate
 ```
+
+### AI/Ollama Issues
+
+**Ollama not responding:**
+```bash
+# Check if Ollama is running
+curl http://localhost:11434/api/tags
+
+# If not, start Ollama
+ollama serve
+```
+
+**Model not found error:**
+```bash
+# List available models
+ollama list
+
+# Pull the required model
+ollama pull llama3.2:3b
+```
+
+**AI generation falling back to templates:**
+- This is normal if Ollama isn't running or the model isn't available
+- Check the Rails logs for specific error messages
+- The app will continue working with predefined survey templates
+
+**Slow AI responses:**
+- Larger models (llama3.1:8b) take longer but give better results
+- Switch to a smaller model (llama3.2:3b) for faster responses
+- Ensure you have sufficient RAM (8GB+ recommended for larger models)
 
 ### Disk Space Issues
 

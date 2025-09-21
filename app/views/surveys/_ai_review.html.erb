@@ -1,0 +1,89 @@
+<div class="bg-gradient-to-r from-purple-50 to-indigo-50 shadow-lg rounded-lg overflow-hidden">
+  <div class="px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600">
+    <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+      🤖 AI Survey Review
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white bg-opacity-20 text-white">
+        Score: <%= review[:overall_score] %>/10
+      </span>
+    </h3>
+  </div>
+
+  <div class="p-6 space-y-6">
+    <!-- Purpose & Quality Analysis -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <h4 class="text-sm font-semibold text-gray-900 mb-2">📋 Purpose Clarity</h4>
+        <p class="text-sm text-gray-700 bg-white p-3 rounded-md border"><%= review[:purpose_clarity] %></p>
+      </div>
+
+      <div>
+        <h4 class="text-sm font-semibold text-gray-900 mb-2">🎯 Question Quality</h4>
+        <p class="text-sm text-gray-700 bg-white p-3 rounded-md border"><%= review[:question_quality] %></p>
+      </div>
+    </div>
+
+    <!-- Survey Flow -->
+    <div>
+      <h4 class="text-sm font-semibold text-gray-900 mb-2">🔄 Survey Flow</h4>
+      <p class="text-sm text-gray-700 bg-white p-3 rounded-md border"><%= review[:survey_flow] %></p>
+    </div>
+
+    <!-- Strengths -->
+    <% if review[:strengths].any? %>
+      <div>
+        <h4 class="text-sm font-semibold text-green-800 mb-3">✅ Strengths</h4>
+        <ul class="space-y-2">
+          <% review[:strengths].each do |strength| %>
+            <li class="flex items-start gap-2">
+              <span class="text-green-500 mt-0.5">•</span>
+              <span class="text-sm text-gray-700"><%= strength %></span>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <!-- Suggestions & Missing Elements -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <% if review[:suggestions].any? %>
+        <div>
+          <h4 class="text-sm font-semibold text-amber-800 mb-3">💡 Suggestions for Improvement</h4>
+          <ul class="space-y-2">
+            <% review[:suggestions].each do |suggestion| %>
+              <li class="flex items-start gap-2">
+                <span class="text-amber-500 mt-0.5">•</span>
+                <span class="text-sm text-gray-700"><%= suggestion %></span>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <% if review[:missing_elements].any? %>
+        <div>
+          <h4 class="text-sm font-semibold text-red-800 mb-3">❗ Missing Elements</h4>
+          <ul class="space-y-2">
+            <% review[:missing_elements].each do |element| %>
+              <li class="flex items-start gap-2">
+                <span class="text-red-500 mt-0.5">•</span>
+                <span class="text-sm text-gray-700"><%= element %></span>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Action Info -->
+    <div class="pt-4 border-t border-gray-200">
+      <div class="flex justify-between items-center">
+        <p class="text-xs text-gray-500">
+          AI analysis completed • Use the suggestions below to improve your survey
+        </p>
+        <p class="text-xs text-purple-600 font-medium">
+          ✨ Make changes using the form and question list below
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

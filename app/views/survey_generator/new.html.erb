@@ -1,0 +1,89 @@
+<div class="max-w-2xl mx-auto" data-controller="survey-prompt">
+  <div class="mb-8 text-center">
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">Generate Survey with AI</h1>
+    <p class="text-lg text-gray-600">Describe what kind of survey you want, and I'll create it for you</p>
+  </div>
+
+  <div data-controller="survey-generator">
+    <%= form_with url: generate_survey_path, local: false,
+        data: {
+          "survey-generator-target" => "form",
+          "action" => "submit->survey-generator#start"
+        },
+        class: "space-y-6" do |form| %>
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+      <div class="px-6 py-8">
+        <div class="space-y-6">
+          <!-- Examples Section -->
+          <div class="bg-blue-50 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-blue-900 mb-3">💡 Try these examples:</h3>
+            <div class="space-y-2">
+              <button type="button" class="block w-full text-left px-4 py-2 bg-white rounded-md shadow-sm text-blue-700 hover:bg-blue-50 border border-blue-200" data-action="click->survey-prompt#selectExample" data-prompt="Create a customer satisfaction survey for a restaurant">
+                🍽️ Customer satisfaction survey for a restaurant
+              </button>
+              <button type="button" class="block w-full text-left px-4 py-2 bg-white rounded-md shadow-sm text-blue-700 hover:bg-blue-50 border border-blue-200" data-action="click->survey-prompt#selectExample" data-prompt="Create an employee engagement survey for our team">
+                👥 Employee engagement survey for our team
+              </button>
+              <button type="button" class="block w-full text-left px-4 py-2 bg-white rounded-md shadow-sm text-blue-700 hover:bg-blue-50 border border-blue-200" data-action="click->survey-prompt#selectExample" data-prompt="Create a product feedback survey for our mobile app">
+                📱 Product feedback survey for our mobile app
+              </button>
+              <button type="button" class="block w-full text-left px-4 py-2 bg-white rounded-md shadow-sm text-blue-700 hover:bg-blue-50 border border-blue-200" data-action="click->survey-prompt#selectExample" data-prompt="Create an event feedback survey for our conference">
+                🎤 Event feedback survey for our conference
+              </button>
+              <button type="button" class="block w-full text-left px-4 py-2 bg-white rounded-md shadow-sm text-blue-700 hover:bg-blue-50 border border-blue-200" data-action="click->survey-prompt#selectExample" data-prompt="Create a training evaluation survey for our workshop">
+                📚 Training evaluation survey for our workshop
+              </button>
+              <button type="button" class="block w-full text-left px-4 py-2 bg-white rounded-md shadow-sm text-blue-700 hover:bg-blue-50 border border-blue-200" data-action="click->survey-prompt#selectExample" data-prompt="Create a market research survey for our new brand">
+                📊 Market research survey for our new brand
+              </button>
+            </div>
+          </div>
+
+          <!-- Prompt Input -->
+          <div>
+            <label for="prompt" class="block text-sm font-medium text-gray-700 mb-2">
+              Describe your survey
+            </label>
+            <textarea
+              name="prompt"
+              id="prompt"
+              rows="4"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              placeholder="e.g., Create a customer satisfaction survey for my coffee shop. I want to know about service quality, product satisfaction, and areas for improvement."
+              data-survey-prompt-target="prompt"
+              required
+            ></textarea>
+            <p class="mt-2 text-sm text-gray-500">
+              Be as specific as possible. Mention the type of survey, your industry, and what you want to learn.
+            </p>
+          </div>
+
+          <!-- Current Capabilities -->
+          <div class="bg-gray-50 rounded-lg p-4">
+            <h4 class="text-sm font-medium text-gray-700 mb-2">Current capabilities:</h4>
+            <ul class="text-sm text-gray-600 space-y-1">
+              <li>• <strong>Sliding Scale Questions</strong> - For rating experiences (1-10 scale)</li>
+              <li>• <strong>Open-ended Text Questions</strong> - For detailed feedback</li>
+              <li>• Auto-generates relevant questions based on your description</li>
+              <li>• You can edit and customize everything after generation</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="bg-gray-50 px-6 py-4 flex justify-between items-center">
+        <%= link_to "← Back to Surveys", surveys_path, class: "text-gray-600 hover:text-gray-900" %>
+
+        <div class="flex gap-3">
+          <%= link_to "Manual Creation", new_survey_path, class: "px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" %>
+          <%= form.submit "✨ Generate Survey",
+              data: { "survey-generator-target" => "button" },
+              class: "px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer" %>
+        </div>
+      </div>
+    </div>
+    <% end %>
+  </div>
+</div>
+

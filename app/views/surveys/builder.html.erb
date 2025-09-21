@@ -1,0 +1,50 @@
+<div class="max-w-4xl mx-auto">
+  <!-- Flash Messages Container -->
+  <div id="flash_messages"></div>
+
+  <div class="mb-8 flex justify-between items-start">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900"><%= @survey.title %></h1>
+      <p class="mt-2 text-sm text-gray-600"><%= @survey.description %></p>
+      <div class="mt-2 flex items-center gap-4">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= @survey.published? ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+          <%= @survey.status.humanize %>
+        </span>
+        <% if @survey.published? %>
+          <%= link_to "View Public Link", take_survey_path(@survey.slug), target: "_blank", class: "text-sm text-indigo-600 hover:text-indigo-500" %>
+        <% end %>
+      </div>
+    </div>
+    <div class="flex gap-2">
+      <div data-controller="ai-review">
+        <%= form_with url: ai_review_survey_path(@survey), method: :post, local: false,
+            data: {
+              "ai-review-target" => "form",
+              "action" => "submit->ai-review#start"
+            } do |form| %>
+          <%= form.submit "🔍 AI Review",
+              data: {
+                "ai-review-target" => "button"
+              },
+              class: "inline-flex items-center px-3 py-2 border border-purple-300 shadow-sm text-sm leading-4 font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500" %>
+        <% end %>
+      </div>
+      <%= link_to "Preview", preview_survey_path(@survey), class: "inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+      <% if @survey.draft? %>
+        <%= button_to "Publish", publish_survey_path(@survey), method: :patch, class: "inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- AI Review Results -->
+  <div id="ai_review_content" class="mb-6">
+    <!-- AI review results will appear here -->
+  </div>
+
+  <!-- Add Question Form -->
+  <%= render 'questions/question_form', survey: @survey, question: @question %>
+
+  <!-- Questions List -->
+  <%= render 'questions/questions_list', questions: @questions, survey: @survey %>
+</div>
+

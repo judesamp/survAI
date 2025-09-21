@@ -1,0 +1,64 @@
+<div class="max-w-2xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Create New Survey</h1>
+    <p class="mt-2 text-sm text-gray-600">Start by giving your survey a title and description</p>
+  </div>
+
+  <%= form_with(model: @survey, class: "space-y-6") do |form| %>
+    <% if @survey.errors.any? %>
+      <div class="bg-red-50 border border-red-200 rounded-md p-4">
+        <h3 class="text-sm font-medium text-red-800">There were <%= pluralize(@survey.errors.count, "error") %> with your submission:</h3>
+        <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+          <% @survey.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="bg-white shadow sm:rounded-lg">
+      <div class="px-4 py-5 sm:p-6">
+        <div class="space-y-6">
+          <div>
+            <%= form.label :title, class: "block text-sm font-medium text-gray-700" %>
+            <%= form.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Customer Satisfaction Survey" %>
+          </div>
+
+          <div>
+            <%= form.label :description, class: "block text-sm font-medium text-gray-700" %>
+            <%= form.text_area :description, rows: 3, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Help us improve our service by sharing your feedback..." %>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <%= form.label :visibility, class: "block text-sm font-medium text-gray-700" %>
+              <%= form.select :visibility, options_for_select(Survey.visibilities.map {|k,v| [k.humanize.gsub('_survey', ''), k]}, @survey.visibility), {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+            </div>
+
+            <div>
+              <%= form.label :response_limit, class: "block text-sm font-medium text-gray-700" %>
+              <%= form.number_field :response_limit, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Leave blank for unlimited" %>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <%= form.label :starts_at, "Start Date (Optional)", class: "block text-sm font-medium text-gray-700" %>
+              <%= form.datetime_local_field :starts_at, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+            </div>
+
+            <div>
+              <%= form.label :ends_at, "End Date (Optional)", class: "block text-sm font-medium text-gray-700" %>
+              <%= form.datetime_local_field :ends_at, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <%= form.submit "Create Survey", class: "w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm cursor-pointer" %>
+        <%= link_to "Cancel", surveys_path, class: "mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" %>
+      </div>
+    </div>
+  <% end %>
+</div>

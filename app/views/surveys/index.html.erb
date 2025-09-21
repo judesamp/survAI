@@ -1,0 +1,65 @@
+<div class="px-4 sm:px-0">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-3xl font-bold text-gray-900">Surveys</h1>
+      <p class="mt-2 text-sm text-gray-700">Manage your surveys and view responses</p>
+    </div>
+    <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+      <div class="flex gap-3">
+        <%= link_to "✨ Generate with AI", generate_survey_path, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+        <%= link_to "Manual Creation", new_survey_path, class: "inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 bg-white shadow overflow-hidden sm:rounded-md">
+    <% if @surveys.any? %>
+      <ul class="divide-y divide-gray-200">
+        <% @surveys.each do |survey| %>
+          <li>
+            <%= link_to survey, class: "block hover:bg-gray-50 px-4 py-4 sm:px-6" do %>
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center justify-between">
+                    <p class="text-lg font-medium text-indigo-600 truncate">
+                      <%= survey.title %>
+                    </p>
+                    <div class="ml-2 flex-shrink-0 flex">
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= survey.published? ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+                        <%= survey.status.humanize %>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="mt-2 sm:flex sm:justify-between">
+                    <div class="sm:flex">
+                      <p class="flex items-center text-sm text-gray-500">
+                        <%= survey.description&.truncate(100) || "No description" %>
+                      </p>
+                    </div>
+                    <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                      <p>
+                        <%= survey.questions.count %> questions •
+                        <%= survey.responses.count %> responses
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No surveys</h3>
+        <p class="mt-1 text-sm text-gray-500">Get started by creating a new survey.</p>
+        <div class="mt-6">
+          <%= link_to "Create Survey", new_survey_path, class: "inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

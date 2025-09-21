@@ -1,0 +1,142 @@
+<div class="max-w-4xl mx-auto">
+  <div class="mb-8">
+    <div class="flex justify-between items-start">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900"><%= @survey.title %></h1>
+        <p class="mt-2 text-gray-600"><%= @survey.description %></p>
+
+        <div class="mt-4 flex items-center gap-4">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= @survey.published? ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+            <%= @survey.status.humanize %>
+          </span>
+          <span class="text-sm text-gray-500">
+            <%= @survey.visibility.humanize.gsub('_survey', '') %> visibility
+          </span>
+          <% if @survey.published? %>
+            <span class="text-sm text-gray-500">•</span>
+            <%= link_to take_survey_path(@survey.slug), target: "_blank", class: "text-sm text-indigo-600 hover:text-indigo-500 flex items-center gap-1" do %>
+              Public Link
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+              </svg>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <%= link_to "Edit Survey", edit_survey_path(@survey), class: "inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+        <%= link_to "Survey Builder", builder_survey_path(@survey), class: "inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700" %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Survey Statistics -->
+  <div class="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+      <div class="px-4 py-5 sm:p-6">
+        <dt class="text-sm font-medium text-gray-500 truncate">Total Questions</dt>
+        <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= @questions.count %></dd>
+      </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+      <div class="px-4 py-5 sm:p-6">
+        <dt class="text-sm font-medium text-gray-500 truncate">Total Responses</dt>
+        <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= @survey.responses.count %></dd>
+      </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+      <div class="px-4 py-5 sm:p-6">
+        <dt class="text-sm font-medium text-gray-500 truncate">Completion Rate</dt>
+        <dd class="mt-1 text-3xl font-semibold text-gray-900">
+          <% if @survey.responses.any? %>
+            <%= ((@survey.responses.completed.count.to_f / @survey.responses.count) * 100).round %>%
+          <% else %>
+            N/A
+          <% end %>
+        </dd>
+      </div>
+    </div>
+  </div>
+
+  <!-- Survey Details -->
+  <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+    <div class="px-4 py-5 sm:px-6">
+      <h3 class="text-lg leading-6 font-medium text-gray-900">Survey Details</h3>
+    </div>
+    <div class="border-t border-gray-200">
+      <dl>
+        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">Created</dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"><%= @survey.created_at.strftime("%B %d, %Y at %I:%M %p") %></dd>
+        </div>
+        <% if @survey.starts_at %>
+          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Starts At</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"><%= @survey.starts_at.strftime("%B %d, %Y at %I:%M %p") %></dd>
+          </div>
+        <% end %>
+        <% if @survey.ends_at %>
+          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Ends At</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"><%= @survey.ends_at.strftime("%B %d, %Y at %I:%M %p") %></dd>
+          </div>
+        <% end %>
+        <% if @survey.response_limit %>
+          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Response Limit</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"><%= @survey.response_limit %> responses maximum</dd>
+          </div>
+        <% end %>
+        <% if @survey.slug %>
+          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Public URL</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              <%= link_to take_survey_url(@survey.slug), take_survey_path(@survey.slug), target: "_blank", class: "text-indigo-600 hover:text-indigo-500" %>
+            </dd>
+          </div>
+        <% end %>
+      </dl>
+    </div>
+  </div>
+
+  <!-- Questions Preview -->
+  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    <div class="px-4 py-5 sm:px-6">
+      <h3 class="text-lg leading-6 font-medium text-gray-900">Questions (<%= @questions.count %>)</h3>
+    </div>
+    <div class="border-t border-gray-200">
+      <% if @questions.any? %>
+        <ul class="divide-y divide-gray-200">
+          <% @questions.each_with_index do |question, index| %>
+            <li class="px-4 py-4 sm:px-6">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-900">
+                    <%= index + 1 %>. <%= question.question_text %>
+                    <% if question.required? %>
+                      <span class="text-red-500">*</span>
+                    <% end %>
+                  </p>
+                  <p class="text-sm text-gray-500">
+                    Type: <%= question.question_type.humanize %>
+                    <% if question.options.any? %>
+                      • Options: <%= question.options.join(", ") %>
+                    <% end %>
+                  </p>
+                </div>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="px-4 py-8 text-center text-gray-500">
+          <p>No questions added yet.</p>
+          <%= link_to "Add Questions", builder_survey_path(@survey), class: "mt-2 inline-flex items-center text-indigo-600 hover:text-indigo-500" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

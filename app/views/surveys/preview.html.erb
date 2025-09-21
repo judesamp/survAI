@@ -1,0 +1,46 @@
+<div class="max-w-4xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Preview: <%= @survey.title %></h1>
+    <p class="mt-2 text-gray-600"><%= @survey.description %></p>
+  </div>
+
+  <div class="bg-white shadow sm:rounded-lg">
+    <div class="px-4 py-5 sm:p-6">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Survey Questions</h3>
+
+      <% if @questions.any? %>
+        <div class="space-y-6">
+          <% @questions.each_with_index do |question, index| %>
+            <div class="border-b border-gray-200 pb-6 last:border-b-0">
+              <p class="text-sm font-medium text-gray-900 mb-3">
+                <%= index + 1 %>. <%= question.question_text %>
+                <% if question.required? %>
+                  <span class="text-red-500">*</span>
+                <% end %>
+              </p>
+
+              <% if question.question_type == "scale" %>
+                <div class="flex items-center space-x-2">
+                  <% (1..10).each do |i| %>
+                    <label class="flex items-center">
+                      <input type="radio" name="question_<%= question.id %>" value="<%= i %>" class="mr-1" disabled>
+                      <%= i %>
+                    </label>
+                  <% end %>
+                </div>
+              <% else %>
+                <textarea class="w-full border-gray-300 rounded-md" rows="3" placeholder="Your response..." disabled></textarea>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-gray-500">No questions added yet.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-6">
+    <%= link_to "← Back to Builder", builder_survey_path(@survey), class: "inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" %>
+  </div>
+</div>
