@@ -1,0 +1,14 @@
+<div class="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
+  <div class="flex items-center justify-between">
+    <span class="text-blue-900">
+      <% if action == "created" %>
+        👤 Assignment created for <%= assignment.user.display_name %>
+      <% else %>
+        ✅ Assignment completed by <%= assignment.user.display_name %>
+      <% end %>
+    </span>
+    <span class="text-xs text-blue-600">
+      <%= time_ago_in_words(assignment.created_at) %> ago
+    </span>
+  </div>
+</div>

@@ -1,0 +1,49 @@
+<!-- Response Rate -->
+<div class="bg-white overflow-hidden shadow rounded-lg">
+  <div class="px-4 py-5 sm:p-6">
+    <dt class="text-sm font-medium text-gray-500 truncate">Response Rate</dt>
+    <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= metrics[:response_rate] %>%</dd>
+    <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+      <div class="bg-indigo-600 h-2 rounded-full" style="width: <%= metrics[:response_rate] %>%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Completion Rate -->
+<div class="bg-white overflow-hidden shadow rounded-lg">
+  <div class="px-4 py-5 sm:p-6">
+    <dt class="text-sm font-medium text-gray-500 truncate">Completion Rate</dt>
+    <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= metrics[:completion_rate] %>%</dd>
+    <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+      <div class="bg-green-600 h-2 rounded-full" style="width: <%= metrics[:completion_rate] %>%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Average Completion Time -->
+<div class="bg-white overflow-hidden shadow rounded-lg">
+  <div class="px-4 py-5 sm:p-6">
+    <dt class="text-sm font-medium text-gray-500 truncate">Avg. Completion Time</dt>
+    <dd class="mt-1 text-3xl font-semibold text-gray-900">
+      <% if metrics[:average_completion_time] %>
+        <%= metrics[:average_completion_time] %><span class="text-lg text-gray-500">min</span>
+      <% else %>
+        --
+      <% end %>
+    </dd>
+  </div>
+</div>
+
+<!-- Average Scale Score -->
+<div class="bg-white overflow-hidden shadow rounded-lg">
+  <div class="px-4 py-5 sm:p-6">
+    <dt class="text-sm font-medium text-gray-500 truncate">Avg. Scale Score</dt>
+    <dd class="mt-1 text-3xl font-semibold text-gray-900">
+      <% if metrics[:average_scale_score] %>
+        <%= metrics[:average_scale_score] %><span class="text-lg text-gray-500">/10</span>
+      <% else %>
+        --
+      <% end %>
+    </dd>
+  </div>
+</div>

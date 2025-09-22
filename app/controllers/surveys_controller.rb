@@ -1,5 +1,5 @@
 class SurveysController < ApplicationController
-  before_action :set_survey, only: [:show, :edit, :update, :destroy, :builder, :publish, :preview, :ai_review, :dashboard, :ai_analysis, :generate_data, :insights]
+  before_action :set_survey, only: [:show, :edit, :update, :destroy, :builder, :publish, :preview, :ai_review, :dashboard, :ai_analysis, :generate_data, :reset_assignments, :insights]
   before_action :set_organization
 
   def index
@@ -123,24 +123,63 @@ class SurveysController < ApplicationController
 
     # Validate input
     if assignments_count < 1 || assignments_count > 100
-      redirect_to dashboard_survey_path(@survey), alert: "Number of assignments must be between 1 and 100."
+      respond_to do |format|
+        format.html { redirect_to dashboard_survey_path(@survey), alert: "Number of assignments must be between 1 and 100." }
+        format.turbo_stream {
+          render turbo_stream: turbo_stream.replace("data-generation-status",
+            partial: "surveys/data_generation_error",
+            locals: { error: "Number of assignments must be between 1 and 100.", job_id: "validation-error", survey: @survey })
+        }
+      end
       return
     end
 
     if responses_count < 0 || responses_count > assignments_count
-      redirect_to dashboard_survey_path(@survey), alert: "Number of responses cannot exceed number of assignments."
+      respond_to do |format|
+        format.html { redirect_to dashboard_survey_path(@survey), alert: "Number of responses cannot exceed number of assignments." }
+        format.turbo_stream {
+          render turbo_stream: turbo_stream.replace("data-generation-status",
+            partial: "surveys/data_generation_error",
+            locals: { error: "Number of responses cannot exceed number of assignments.", job_id: "validation-error", survey: @survey })
+        }
+      end
       return
     end
 
+    # Generate unique job ID
+    job_id = SecureRandom.hex(8)
+
+    # Start background job
+    SurveyDataGenerationJob.perform_later(@survey.id, assignments_count, responses_count, job_id)
+
+    respond_to do |format|
+      format.html {
+        redirect_to dashboard_survey_path(@survey),
+        notice: "Data generation started in background. You'll see live updates below."
+      }
+      format.turbo_stream {
+        render turbo_stream: turbo_stream.replace("data-generation-status",
+          partial: "surveys/data_generation_progress",
+          locals: { message: "Queued for processing...", percentage: 0, job_id: job_id, survey: @survey })
+      }
+    end
+  end
+
+  def reset_assignments
     begin
-      generator = SurveyDataGenerator.new(@survey)
-      result = generator.generate_assignments_and_responses(assignments_count, responses_count)
+      ActiveRecord::Base.transaction do
+        # First, clear the response references from assignments
+        @survey.assignments.update_all(response_id: nil)
+        # Then delete all responses and assignments for this survey
+        @survey.responses.destroy_all
+        @survey.assignments.destroy_all
+      end
 
       redirect_to dashboard_survey_path(@survey),
-                  notice: "Successfully created #{result[:assignments_created]} assignments and #{result[:responses_created]} responses."
+                  notice: "All assignments and responses have been reset for this survey."
     rescue => e
-      Rails.logger.error "Error generating survey data: #{e.message}"
-      redirect_to dashboard_survey_path(@survey), alert: "Error generating data: #{e.message}"
+      Rails.logger.error "Error resetting assignments: #{e.message}"
+      redirect_to dashboard_survey_path(@survey), alert: "Error resetting assignments: #{e.message}"
     end
   end
 

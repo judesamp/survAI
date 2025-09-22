@@ -1,6 +1,6 @@
 class QuestionsController < ApplicationController
   before_action :set_survey
-  before_action :set_question, only: [:show, :edit, :update, :destroy, :move_up, :move_down]
+  before_action :set_question, only: [:show, :edit, :update, :destroy, :move_up, :move_down, :summarize]
 
   def index
     @questions = @survey.questions.order(:position)
@@ -87,6 +87,27 @@ class QuestionsController < ApplicationController
       next_question.save!
     end
     redirect_to builder_survey_path(@survey)
+  end
+
+  def summarize
+    Rails.logger.info "=== Question Response Summarization Started ==="
+    Rails.logger.info "Question: #{@question.question_text}"
+
+    begin
+      summarizer = ResponseSummarizer.new(@question)
+      summary = summarizer.summarize
+
+      if summary
+        Rails.logger.info "=== Summarization Completed Successfully ==="
+        render json: summary
+      else
+        Rails.logger.warn "=== No summary generated - insufficient data ==="
+        render json: { error: "Insufficient responses for summarization" }, status: :unprocessable_entity
+      end
+    rescue => e
+      Rails.logger.error "Summarization failed: #{e.message}"
+      render json: { error: "Failed to generate summary" }, status: :internal_server_error
+    end
   end
 
   private

@@ -1,3 +1,4 @@
+<%= turbo_stream_from "survey_#{@survey.id}_data_generation" %>
 <div class="max-w-7xl mx-auto">
   <!-- Header Section -->
   <div class="mb-8 flex justify-between items-start">
@@ -35,8 +36,15 @@
     <!-- AI insights will appear here -->
   </div>
 
+  <!-- Real-time updates handled by survey-data-generation Stimulus controller -->
+
+  <!-- Progress indicator area -->
+  <div id="data-generation-status" class="mb-6">
+    <!-- Progress updates will appear here -->
+  </div>
+
   <!-- Key Metrics Cards -->
-  <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+  <div id="dashboard-metrics" class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
     <!-- Response Rate -->
     <div class="bg-white overflow-hidden shadow rounded-lg">
       <div class="px-4 py-5 sm:p-6">
@@ -220,8 +228,32 @@
                       >
                         View responses
                       </button>
+                      <% if response_count >= 3 %>
+                        <button
+                          class="text-xs text-purple-600 hover:text-purple-500"
+                          onclick="generateSummary(<%= question.id %>)"
+                          id="summary-btn-<%= question.id %>"
+                        >
+                          🤖 AI Summary
+                        </button>
+                      <% end %>
                     <% end %>
                   </div>
+
+                  <!-- AI Summary Section -->
+                  <% if response_count >= 3 %>
+                    <div id="question-<%= question.id %>-summary" class="hidden mt-3">
+                      <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
+                        <div class="flex items-center gap-2 mb-3">
+                          <span class="text-purple-600">🤖</span>
+                          <h5 class="font-medium text-purple-900">AI Response Summary</h5>
+                        </div>
+                        <div id="summary-content-<%= question.id %>">
+                          <!-- Summary content will be loaded here -->
+                        </div>
+                      </div>
+                    </div>
+                  <% end %>
 
                   <% if response_count > 0 %>
                     <div id="question-<%= question.id %>-responses" class="hidden mt-3 space-y-2">
@@ -324,7 +356,7 @@
       <p class="mt-1 max-w-2xl text-sm text-gray-500">Create additional assignments and responses for testing dashboard functionality</p>
     </div>
     <div class="border-t border-gray-200 px-6 py-4">
-      <%= form_with url: generate_data_survey_path(@survey), method: :post, local: true, class: "space-y-4" do |form| %>
+      <%= form_with url: generate_data_survey_path(@survey), method: :post, local: false, class: "space-y-4" do |form| %>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <%= form.label :assignments_count, "Number of Assignments", class: "block text-sm font-medium text-gray-700 mb-1" %>
@@ -345,15 +377,28 @@
             <p class="mt-1 text-xs text-gray-500">How many of those assignments should have responses</p>
           </div>
 
-          <div class="flex items-end">
+          <div class="flex items-end space-x-2">
             <%= form.submit "Generate Data",
-                class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 w-full justify-center" %>
+                class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex-1 justify-center" %>
           </div>
         </div>
 
         <div class="text-xs text-gray-500">
           <strong>Note:</strong> This will create new assignments from users who aren't already assigned to this survey.
-          Response count cannot exceed assignment count.
+          Response count cannot exceed assignment count. If needed, additional users will be created automatically.
+        </div>
+      <% end %>
+
+      <% if @assignments.any? %>
+        <div class="mt-4 pt-4 border-t border-gray-200">
+          <%= button_to reset_assignments_survey_path(@survey),
+              method: :delete,
+              data: {
+                confirm: "Are you sure? This will permanently delete all assignments and responses for this survey."
+              },
+              class: "inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" do %>
+            🗑️ Reset All Assignments & Responses
+          <% end %>
         </div>
       <% end %>
     </div>
@@ -372,5 +417,146 @@
       element.classList.add('hidden');
       button.textContent = 'View responses';
     }
+  }
+
+  function generateSummary(questionId) {
+    const summarySection = document.getElementById(`question-${questionId}-summary`);
+    const summaryContent = document.getElementById(`summary-content-${questionId}`);
+    const button = document.getElementById(`summary-btn-${questionId}`);
+
+    // Show section and loading state
+    summarySection.classList.remove('hidden');
+    button.textContent = '🤖 Analyzing...';
+    button.disabled = true;
+
+    summaryContent.innerHTML = `
+      <div class="flex items-center gap-2 text-purple-600">
+        <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="text-sm">AI is analyzing responses...</span>
+      </div>
+    `;
+
+    // Make AJAX request to generate summary
+    fetch(`/surveys/<%= @survey.id %>/questions/${questionId}/summarize`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      displaySummary(questionId, data);
+      button.textContent = '✅ Summary Ready';
+      button.disabled = false;
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      summaryContent.innerHTML = '<p class="text-red-600 text-sm">Error generating summary. Please try again.</p>';
+      button.textContent = '🤖 AI Summary';
+      button.disabled = false;
+    });
+  }
+
+  function displaySummary(questionId, summary) {
+    const summaryContent = document.getElementById(`summary-content-${questionId}`);
+
+    const sentimentColor = {
+      'positive': 'text-green-700 bg-green-100',
+      'negative': 'text-red-700 bg-red-100',
+      'mixed': 'text-yellow-700 bg-yellow-100',
+      'neutral': 'text-gray-700 bg-gray-100'
+    };
+
+    const priorityColor = {
+      'low': 'text-green-700 bg-green-100',
+      'medium': 'text-yellow-700 bg-yellow-100',
+      'high': 'text-red-700 bg-red-100'
+    };
+
+    const sentimentClass = sentimentColor[summary.overall_sentiment] || sentimentColor['neutral'];
+    const priorityClass = priorityColor[summary.priority_level] || priorityColor['medium'];
+
+    summaryContent.innerHTML = `
+      <div class="space-y-4">
+        <!-- Header with metrics -->
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <span class="text-sm text-purple-700 font-medium">📊 ${summary.response_count} Employee Responses</span>
+          <div class="flex gap-2">
+            <span class="px-2 py-1 rounded-full text-xs font-medium ${sentimentClass}">
+              ${summary.overall_sentiment} sentiment
+            </span>
+            ${summary.priority_level ? `
+              <span class="px-2 py-1 rounded-full text-xs font-medium ${priorityClass}">
+                ${summary.priority_level} priority
+              </span>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="bg-gray-50 rounded-lg p-3">
+          <p class="text-sm text-gray-700 font-medium mb-2">🎯 Executive Summary</p>
+          <p class="text-sm text-gray-600 leading-relaxed">${summary.summary}</p>
+        </div>
+
+        <!-- Key Themes -->
+        ${summary.key_themes && summary.key_themes.length > 0 ? `
+          <div>
+            <p class="text-sm text-gray-700 font-medium mb-2">📈 Key Themes Identified</p>
+            <ul class="space-y-2">
+              ${summary.key_themes.map(theme => `
+                <li class="text-sm text-gray-600 bg-blue-50 rounded p-2 border-l-4 border-blue-300">
+                  ${theme}
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        ` : ''}
+
+        <!-- Critical Insights Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          ${summary.top_positive ? `
+            <div class="bg-green-50 rounded-lg p-3 border border-green-200">
+              <span class="text-sm font-medium text-green-800">✅ Strengths to Leverage</span>
+              <p class="text-xs text-green-700 mt-1">${summary.top_positive}</p>
+            </div>
+          ` : ''}
+
+          ${summary.top_concern ? `
+            <div class="bg-orange-50 rounded-lg p-3 border border-orange-200">
+              <span class="text-sm font-medium text-orange-800">⚠️ Priority Concerns</span>
+              <p class="text-xs text-orange-700 mt-1">${summary.top_concern}</p>
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- Action Recommendations -->
+        ${summary.action_recommendations && summary.action_recommendations.length > 0 ? `
+          <div class="bg-purple-50 rounded-lg p-3 border border-purple-200">
+            <p class="text-sm text-purple-800 font-medium mb-2">🎯 Recommended Actions</p>
+            <ul class="space-y-1">
+              ${summary.action_recommendations.map(rec => `
+                <li class="text-xs text-purple-700 flex items-start gap-2">
+                  <span class="text-purple-400 mt-0.5">•</span>
+                  <span>${rec}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        ` : ''}
+
+        <!-- Response Patterns -->
+        ${summary.response_patterns ? `
+          <div class="bg-indigo-50 rounded-lg p-3 border border-indigo-200">
+            <p class="text-sm text-indigo-800 font-medium mb-1">👥 Response Patterns</p>
+            <p class="text-xs text-indigo-700">${summary.response_patterns}</p>
+          </div>
+        ` : ''}
+      </div>
+    `;
   }
 </script>

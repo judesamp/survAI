@@ -10,6 +10,7 @@ Rails.application.routes.draw do
       member do
         patch :move_up
         patch :move_down
+        post :summarize
       end
     end
     resources :assignments
@@ -21,6 +22,7 @@ Rails.application.routes.draw do
       get :dashboard
       post :ai_analysis
       post :generate_data
+      delete :reset_assignments
       get :insights
     end
   end

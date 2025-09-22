@@ -5,46 +5,52 @@ class SurveyDataGenerator
   end
 
   def generate_assignments_and_responses(assignments_count, responses_count)
-    ActiveRecord::Base.transaction do
-      # Find users who aren't already assigned to this survey
-      assigned_user_ids = @survey.assignments.pluck(:user_id)
-      available_users = @organization.users.active_users.where.not(id: assigned_user_ids)
+    assignments = create_assignments(assignments_count)
 
-      if available_users.count < assignments_count
-        raise "Only #{available_users.count} unassigned users available, but #{assignments_count} assignments requested"
-      end
+    # Create responses for a subset of assignments
+    assignments_for_responses = assignments.sample(responses_count)
+    created_responses = []
 
-      # Create assignments
-      users_to_assign = available_users.limit(assignments_count)
-      created_assignments = []
-
-      users_to_assign.each do |user|
-        assignment = Assignment.create!(
-          survey: @survey,
-          user: user,
-          assigned_by: @survey.created_by,
-          assigned_at: rand(1..7).days.ago
-        )
-        created_assignments << assignment
-      end
-
-      # Create responses for a subset of assignments
-      assignments_for_responses = created_assignments.sample(responses_count)
-      created_responses = []
-
-      assignments_for_responses.each do |assignment|
-        response = create_response_for_assignment(assignment)
-        created_responses << response if response
-      end
-
-      {
-        assignments_created: created_assignments.count,
-        responses_created: created_responses.count
-      }
+    assignments_for_responses.each do |assignment|
+      response = create_response_for_assignment(assignment)
+      created_responses << response if response
     end
+
+    {
+      assignments_created: assignments.count,
+      responses_created: created_responses.count
+    }
   end
 
-  private
+  def create_assignments(assignments_count)
+    # Find users who aren't already assigned to this survey
+    assigned_user_ids = @survey.assignments.pluck(:user_id)
+    available_users = @organization.users.active_users.where.not(id: assigned_user_ids)
+
+    # Auto-create users if we don't have enough
+    if available_users.count < assignments_count
+      needed_users = assignments_count - available_users.count
+      create_additional_users(needed_users)
+      # Refresh the available users list
+      available_users = @organization.users.active_users.where.not(id: assigned_user_ids)
+    end
+
+    # Create assignments
+    users_to_assign = available_users.limit(assignments_count)
+    created_assignments = []
+
+    users_to_assign.each do |user|
+      assignment = Assignment.create!(
+        survey: @survey,
+        user: user,
+        assigned_by: @survey.created_by,
+        assigned_at: rand(1..7).days.ago
+      )
+      created_assignments << assignment
+    end
+
+    created_assignments
+  end
 
   def create_response_for_assignment(assignment)
     # Vary response timing
@@ -88,6 +94,8 @@ class SurveyDataGenerator
     response
   end
 
+  private
+
   def generate_answer_for_question(question, user)
     if question.question_type == "scale"
       # Generate realistic scale responses (tend toward positive but with variation)
@@ -109,44 +117,56 @@ class SurveyDataGenerator
 
       base_scores.sample
     else
-      # Generate realistic text responses based on question position/content
-      text_responses = case question.position
-      when 1 # Usually "what do you enjoy" type questions
-        [
-          "Great team collaboration and supportive colleagues",
-          "Flexible work arrangements and good work-life balance",
-          "Challenging projects that help me grow professionally",
-          "The company culture and values alignment",
-          "Learning opportunities and professional development",
-          "Autonomy in my role and trust from management",
-          "Working on innovative products and solutions",
-          "Strong leadership and clear communication"
-        ]
-      when 2 # Usually "areas for improvement" type questions
-        [
-          "Better communication between departments and clearer priorities",
-          "More professional development opportunities and training budget",
-          "Improved work-life balance policies and flexible schedules",
-          "Faster decision-making processes and less bureaucracy",
-          "Better tools and technology to support our work",
-          "More recognition and feedback on performance",
-          "Clearer career advancement paths and promotion criteria",
-          "Enhanced office space and facilities"
-        ]
-      else # Other text questions
-        [
-          "Hands-on practice sessions and real-world scenarios",
-          "Interactive discussions and peer learning opportunities",
-          "Clear frameworks and actionable techniques",
-          "Expert insights and best practice sharing",
-          "Better user interface and user experience improvements",
-          "Performance optimization and faster load times",
-          "Integration with popular third-party tools",
-          "Enhanced mobile experience and responsive design"
-        ]
-      end
+      # Generate realistic AI-powered text responses
+      generator = RealisticResponseGenerator.new(question, user)
+      response = generator.generate_response
 
-      text_responses.sample
+      # If AI generation fails, fall back to simple responses
+      response || generate_simple_fallback_response(question, user)
+    end
+  end
+
+  private
+
+  def generate_simple_fallback_response(question, user)
+    # Simple fallback if AI generation completely fails
+    question_lower = question.question_text.downcase
+
+    if question_lower.include?('enjoy') || question_lower.include?('like')
+      "I enjoy the collaborative environment and learning opportunities."
+    elsif question_lower.include?('improve') || question_lower.include?('better')
+      "Better communication and more efficient processes would help."
+    else
+      "Overall things are going well with room for improvement."
+    end
+  end
+
+  def create_additional_users(count)
+    departments = ['Engineering', 'Marketing', 'Sales', 'Operations', 'Customer Success']
+    roles = ['respondent']
+
+    count.times do |i|
+      # Generate realistic employee data
+      first_names = ['Alex', 'Jordan', 'Casey', 'Morgan', 'Riley', 'Sage', 'Quinn', 'Avery', 'Cameron', 'Drew']
+      last_names = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez']
+
+      first_name = first_names.sample
+      last_name = last_names.sample
+      department = departments.sample
+
+      # Ensure unique email
+      base_email = "#{first_name.downcase}.#{last_name.downcase}#{rand(100..999)}@#{@organization.name.downcase.gsub(/\s/, '')}.com"
+
+      User.create!(
+        first_name: first_name,
+        last_name: last_name,
+        email_address: base_email,
+        organization: @organization,
+        department: department,
+        role: roles.sample,
+        status: 'active',
+        hire_date: rand(30..1095).days.ago # Hired between 1 month and 3 years ago
+      )
     end
   end
 end

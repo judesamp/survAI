@@ -1,0 +1,14 @@
+<div class="mb-2 p-2 bg-green-50 border border-green-200 rounded text-sm">
+  <div class="flex items-center justify-between">
+    <span class="text-green-900">
+      <% if action == "created" %>
+        📝 Response <%= current_count %>/<%= total_assignments %> - <%= response.respondent_name %>
+      <% else %>
+        ✅ Response completed by <%= response.respondent_name %>
+      <% end %>
+    </span>
+    <span class="text-xs text-green-600">
+      <%= response.answers.count %> answers
+    </span>
+  </div>
+</div>

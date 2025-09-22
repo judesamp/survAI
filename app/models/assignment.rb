@@ -12,6 +12,8 @@ class Assignment < ApplicationRecord
   scope :not_started, -> { where(completed: false, response_id: nil) }
 
   before_update :set_completed_at, if: :completed_changed?
+  # after_create :broadcast_assignment_created
+  # after_update :broadcast_assignment_updated
 
   def status
     return :completed if completed?
@@ -43,6 +45,52 @@ class Assignment < ApplicationRecord
       self.completed_at = Time.current
     else
       self.completed_at = nil
+    end
+  end
+
+  def broadcast_assignment_created
+    stream_name = "survey_#{survey.id}_data_generation"
+    Rails.logger.info "Broadcasting assignment created to #{stream_name}"
+
+    Turbo::StreamsChannel.broadcast_prepend_to(
+      stream_name,
+      target: "data-generation-status",
+      html: %{
+        <div class="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-blue-900">
+              👤 Assignment created for #{user.display_name}
+            </span>
+            <span class="text-xs text-blue-600">
+              #{created_at.strftime('%H:%M:%S')}
+            </span>
+          </div>
+        </div>
+      }
+    )
+  end
+
+  def broadcast_assignment_updated
+    if completed_changed? && completed?
+      stream_name = "survey_#{survey.id}_data_generation"
+      Rails.logger.info "Broadcasting assignment completed to #{stream_name}"
+
+      Turbo::StreamsChannel.broadcast_prepend_to(
+        stream_name,
+        target: "data-generation-status",
+        html: %{
+          <div class="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-blue-900">
+                ✅ Assignment completed by #{user.display_name}
+              </span>
+              <span class="text-xs text-blue-600">
+                #{completed_at.strftime('%H:%M:%S')}
+              </span>
+            </div>
+          </div>
+        }
+      )
     end
   end
 end
