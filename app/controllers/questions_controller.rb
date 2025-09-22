@@ -40,6 +40,10 @@ class QuestionsController < ApplicationController
   end
 
   def edit
+    respond_to do |format|
+      format.html
+      format.turbo_stream { render partial: "questions/question_edit", locals: { survey: @survey, question: @question } }
+    end
   end
 
   def update
