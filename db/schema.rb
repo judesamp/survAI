@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_21_152846) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_22_164743) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,26 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_152846) do
     t.datetime "updated_at", null: false
     t.index ["question_id"], name: "index_answers_on_question_id"
     t.index ["response_id"], name: "index_answers_on_response_id"
+  end
+
+  create_table "assignments", force: :cascade do |t|
+    t.bigint "survey_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "assigned_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.bigint "assigned_by_id", null: false
+    t.boolean "completed", default: false, null: false
+    t.datetime "completed_at"
+    t.bigint "response_id"
+    t.datetime "reminder_sent_at"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assigned_by_id"], name: "index_assignments_on_assigned_by_id"
+    t.index ["completed"], name: "index_assignments_on_completed"
+    t.index ["response_id"], name: "index_assignments_on_response_id"
+    t.index ["survey_id", "user_id"], name: "index_assignments_on_survey_id_and_user_id", unique: true
+    t.index ["survey_id"], name: "index_assignments_on_survey_id"
+    t.index ["user_id"], name: "index_assignments_on_user_id"
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -54,6 +74,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_152846) do
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "assignment_id"
+    t.datetime "started_at"
+    t.index ["assignment_id"], name: "index_responses_on_assignment_id"
+    t.index ["started_at"], name: "index_responses_on_started_at"
     t.index ["survey_id"], name: "index_responses_on_survey_id"
     t.index ["user_id"], name: "index_responses_on_user_id"
   end
@@ -65,6 +89,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_152846) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "survey_insights", force: :cascade do |t|
+    t.bigint "survey_id", null: false
+    t.json "insights_data", null: false
+    t.bigint "generated_by_id", null: false
+    t.datetime "generated_at", null: false
+    t.string "analysis_version", default: "1.0"
+    t.text "summary"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["generated_by_id"], name: "index_survey_insights_on_generated_by_id"
+    t.index ["survey_id", "generated_at"], name: "index_survey_insights_on_survey_id_and_generated_at"
+    t.index ["survey_id"], name: "index_survey_insights_on_survey_id"
   end
 
   create_table "surveys", force: :cascade do |t|
@@ -95,16 +133,29 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_152846) do
     t.bigint "organization_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "department"
+    t.date "hire_date"
+    t.integer "status", default: 0, null: false
+    t.datetime "last_survey_response_at"
+    t.index ["department"], name: "index_users_on_department"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["organization_id"], name: "index_users_on_organization_id"
+    t.index ["status"], name: "index_users_on_status"
   end
 
   add_foreign_key "answers", "questions"
   add_foreign_key "answers", "responses"
+  add_foreign_key "assignments", "responses"
+  add_foreign_key "assignments", "surveys"
+  add_foreign_key "assignments", "users"
+  add_foreign_key "assignments", "users", column: "assigned_by_id"
   add_foreign_key "questions", "surveys"
+  add_foreign_key "responses", "assignments"
   add_foreign_key "responses", "surveys"
   add_foreign_key "responses", "users"
   add_foreign_key "sessions", "users"
+  add_foreign_key "survey_insights", "surveys"
+  add_foreign_key "survey_insights", "users", column: "generated_by_id"
   add_foreign_key "surveys", "organizations"
   add_foreign_key "surveys", "users", column: "created_by_id"
   add_foreign_key "users", "organizations"

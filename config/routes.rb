@@ -12,11 +12,16 @@ Rails.application.routes.draw do
         patch :move_down
       end
     end
+    resources :assignments
     member do
       get :builder
       patch :publish
       get :preview
       post :ai_review
+      get :dashboard
+      post :ai_analysis
+      post :generate_data
+      get :insights
     end
   end
 
@@ -27,6 +32,7 @@ Rails.application.routes.draw do
 
   resource :session
   resources :passwords, param: :token
+  resources :survey_insights, only: [:index, :show]
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   get "up" => "rails/health#show", as: :rails_health_check

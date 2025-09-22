@@ -1,5 +1,5 @@
 class SurveysController < ApplicationController
-  before_action :set_survey, only: [:show, :edit, :update, :destroy, :builder, :publish, :preview, :ai_review]
+  before_action :set_survey, only: [:show, :edit, :update, :destroy, :builder, :publish, :preview, :ai_review, :dashboard, :ai_analysis, :generate_data, :insights]
   before_action :set_organization
 
   def index
@@ -74,6 +74,79 @@ class SurveysController < ApplicationController
       }
       format.html { redirect_to @survey, notice: "AI review completed!" }
     end
+  end
+
+  def dashboard
+    @assignments = @survey.assignments.includes(:user, :response)
+    @questions = @survey.questions.includes(:answers)
+
+    # Calculate metrics
+    @metrics = {
+      response_rate: @survey.response_rate,
+      completion_rate: @survey.completion_rate,
+      average_completion_time: @survey.average_completion_time,
+      average_scale_score: @survey.average_scale_score,
+      assignments_by_status: @survey.assignments_by_status
+    }
+  end
+
+  def ai_analysis
+    Rails.logger.info "=== AI Insights Analysis Started ==="
+
+    # Check if we have recent insights (within last hour) to avoid re-generating
+    recent_insight = @survey.survey_insights.recent_first.first
+    if recent_insight && recent_insight.generated_at > 1.hour.ago
+      Rails.logger.info "=== Using recent insights from database ==="
+      @insights = recent_insight.insights_data
+    else
+      # Generate new insights
+      current_user = get_or_create_default_user
+      analyzer = SurveyInsightsAnalyzer.new(@survey, generated_by: current_user)
+      @insights = analyzer.analyze
+    end
+
+    Rails.logger.info "=== AI Insights Analysis Completed ==="
+    Rails.logger.info @insights.inspect
+
+    respond_to do |format|
+      format.turbo_stream {
+        Rails.logger.info "=== Rendering AI Insights Turbo Stream ==="
+        render turbo_stream: turbo_stream.replace("ai_insights_content", partial: "surveys/ai_insights", locals: { insights: @insights, survey: @survey })
+      }
+      format.html { redirect_to dashboard_survey_path(@survey), notice: "AI insights analysis completed!" }
+    end
+  end
+
+  def generate_data
+    assignments_count = params[:assignments_count].to_i
+    responses_count = params[:responses_count].to_i
+
+    # Validate input
+    if assignments_count < 1 || assignments_count > 100
+      redirect_to dashboard_survey_path(@survey), alert: "Number of assignments must be between 1 and 100."
+      return
+    end
+
+    if responses_count < 0 || responses_count > assignments_count
+      redirect_to dashboard_survey_path(@survey), alert: "Number of responses cannot exceed number of assignments."
+      return
+    end
+
+    begin
+      generator = SurveyDataGenerator.new(@survey)
+      result = generator.generate_assignments_and_responses(assignments_count, responses_count)
+
+      redirect_to dashboard_survey_path(@survey),
+                  notice: "Successfully created #{result[:assignments_created]} assignments and #{result[:responses_created]} responses."
+    rescue => e
+      Rails.logger.error "Error generating survey data: #{e.message}"
+      redirect_to dashboard_survey_path(@survey), alert: "Error generating data: #{e.message}"
+    end
+  end
+
+  def insights
+    @insights = @survey.survey_insights.recent_first.includes(:generated_by)
+    @latest_insight = @insights.first
   end
 
   private
