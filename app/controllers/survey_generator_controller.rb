@@ -15,11 +15,22 @@ class SurveyGeneratorController < ApplicationController
     end
 
     begin
-      # Generate survey using AI service
+      # Build personalization options from params
+      personalization_options = {
+        target_audience: params[:target_audience].presence,
+        organization_context: params[:organization_context].presence
+        # Future options can be added here:
+        # survey_length: params[:survey_length],
+        # tone: params[:tone],
+        # industry: params[:industry]
+      }.compact # Remove nil values
+
+      # Generate survey using AI service with personalization
       generator = SurveyAiGenerator.new(
         prompt,
         organization: @organization,
-        created_by: get_or_create_default_user
+        created_by: get_or_create_default_user,
+        options: personalization_options
       )
 
       @survey = generator.generate

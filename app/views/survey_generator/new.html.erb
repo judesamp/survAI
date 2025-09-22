@@ -58,6 +58,72 @@
             </p>
           </div>
 
+          <!-- Advanced Options Section -->
+          <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <button type="button"
+                    class="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 text-left flex items-center justify-between transition-colors duration-150"
+                    data-action="click->survey-prompt#toggleAdvanced">
+              <span class="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                Advanced Options
+              </span>
+              <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                   data-survey-prompt-target="advancedIcon"
+                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+
+            <div class="hidden" data-survey-prompt-target="advancedPanel">
+              <div class="px-4 py-4 bg-white border-t border-gray-200 space-y-4">
+                <!-- Organization/Company Name Field -->
+                <div>
+                  <label for="organization_context" class="block text-sm font-medium text-gray-700 mb-1">
+                    Organization/Company Name
+                  </label>
+                  <input type="text"
+                         name="organization_context"
+                         id="organization_context"
+                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                         placeholder="e.g., iSolved, Acme Corp, Green Valley Hospital"
+                         data-survey-prompt-target="organizationContext">
+                  <p class="mt-1 text-xs text-gray-500">
+                    Your organization's name will be included in relevant questions for personalization.
+                  </p>
+                </div>
+
+                <!-- Target Audience Field -->
+                <div>
+                  <label for="target_audience" class="block text-sm font-medium text-gray-700 mb-1">
+                    Target Audience
+                  </label>
+                  <input type="text"
+                         name="target_audience"
+                         id="target_audience"
+                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                         placeholder="e.g., employees, customers, conference attendees, students"
+                         data-survey-prompt-target="targetAudience">
+                  <p class="mt-1 text-xs text-gray-500">
+                    Who will be taking this survey? This helps generate questions appropriate for your audience.
+                  </p>
+                </div>
+
+                <!-- Smart Suggestions -->
+                <div class="bg-blue-50 rounded-md p-3">
+                  <p class="text-xs font-medium text-blue-900 mb-1">💡 Pro tip:</p>
+                  <p class="text-xs text-blue-800">
+                    Combining both fields creates highly personalized surveys. For example:<br>
+                    • Organization: "iSolved" + Audience: "employees" = "How satisfied are you with your role at iSolved?"<br>
+                    • Organization: "Cafe Luna" + Audience: "customers" = "How was your experience at Cafe Luna?"
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Current Capabilities -->
           <div class="bg-gray-50 rounded-lg p-4">
             <h4 class="text-sm font-medium text-gray-700 mb-2">Current capabilities:</h4>

@@ -2,10 +2,11 @@ class SurveyAiGenerator
   # Available question types - easy to extend
   QUESTION_TYPES = %w[text scale].freeze
 
-  def initialize(prompt, organization:, created_by:)
+  def initialize(prompt, organization:, created_by:, options: {})
     @prompt = prompt
     @organization = organization
     @created_by = created_by
+    @options = options
   end
 
   def generate
@@ -49,6 +50,9 @@ class SurveyAiGenerator
   def generate_with_ollama(prompt)
     client = OllamaClient.new
 
+    # Build enhanced prompt with personalization
+    enhanced_prompt = build_enhanced_prompt(prompt)
+
     system_prompt = <<~SYSTEM
       You are a survey generation AI. Generate a survey based on the user's prompt.
 
@@ -77,11 +81,51 @@ class SurveyAiGenerator
       - Mix of required and optional questions
       - Make questions specific to the survey topic
       - Required field must be boolean (true/false)
+      - IMPORTANT: If an organization/company name is provided, include it naturally in relevant questions
+      - For employee surveys with org name: Use "at [Organization]" in satisfaction/role questions
+      - For customer surveys with org name: Use "at/with [Organization]" in experience questions
 
       Do not include any text before or after the JSON.
     SYSTEM
 
-    client.generate(prompt, system_prompt: system_prompt)
+    client.generate(enhanced_prompt, system_prompt: system_prompt)
+  end
+
+  def build_enhanced_prompt(base_prompt)
+    enhanced = base_prompt
+
+    # Add organization context for personalization
+    if @options[:organization_context].present?
+      enhanced += "\n\nOrganization/Company: #{@options[:organization_context]}"
+      enhanced += "\nIMPORTANT: Include '#{@options[:organization_context]}' in questions where appropriate."
+      enhanced += "\nFor example: 'How satisfied are you with your role at #{@options[:organization_context]}?'"
+      enhanced += "\nOr: 'How was your experience with #{@options[:organization_context]}?'"
+    end
+
+    if @options[:target_audience].present?
+      enhanced += "\n\nTarget Audience: #{@options[:target_audience]}"
+      enhanced += "\nIMPORTANT: Tailor the language, complexity, and question types specifically for this audience."
+      enhanced += "\nMake sure questions are relevant and appropriate for #{@options[:target_audience]}."
+
+      # Smart combination of organization and audience
+      if @options[:organization_context].present?
+        enhanced += "\n\nCOMBINED CONTEXT:"
+        enhanced += "\nGenerate questions for #{@options[:target_audience]} of #{@options[:organization_context]}."
+        enhanced += "\nExample: If surveying employees about satisfaction, ask 'How satisfied are you with your role at #{@options[:organization_context]}?'"
+        enhanced += "\nExample: If surveying customers about service, ask 'How was your recent experience at #{@options[:organization_context]}?'"
+      end
+    end
+
+    # Future enhancements can be added here
+    # if @options[:survey_length].present?
+    #   enhanced += "\nSurvey Length: Generate #{@options[:survey_length]} questions."
+    # end
+
+    # if @options[:tone].present?
+    #   enhanced += "\nTone: Use a #{@options[:tone]} tone in the questions."
+    # end
+
+    enhanced
   end
 
   def validate_survey_structure(survey)
@@ -99,6 +143,7 @@ class SurveyAiGenerator
 
   def fallback_generation(prompt)
     Rails.logger.info "Using fallback generation for prompt: #{prompt}"
+    Rails.logger.info "With options: #{@options.inspect}" if @options.present?
 
     # Use the original rule-based system as fallback
     survey_title, description, questions = case detect_survey_type(prompt)
