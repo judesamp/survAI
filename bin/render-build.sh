@@ -27,10 +27,6 @@ bundle exec rails db:migrate
 echo "Preparing database..."
 bundle exec rails db:prepare
 
-# Setup cache, queue, and cable databases
-echo "Setting up Rails databases..."
-bundle exec rails db:cache:create db:queue:create db:cable:create
-
 # Seed the database
 echo "Seeding database..."
 bundle exec rails db:seed
