@@ -10,6 +10,5 @@ test:
   adapter: test
 
 production:
-  adapter: redis
-  url: <%= ENV['REDIS_URL'] %>
+  adapter: solid_cable
   channel_prefix: survai_production
