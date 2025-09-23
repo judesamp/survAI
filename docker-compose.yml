@@ -24,9 +24,12 @@ services:
       retries: 5
 
   web:
+    platform: linux/arm64
     build:
       context: .
       dockerfile: Dockerfile.dev
+      platforms:
+        - linux/arm64
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails server -b 0.0.0.0"
     volumes:
       - .:/rails
@@ -50,9 +53,12 @@ services:
     tty: true
 
   css:
+    platform: linux/arm64
     build:
       context: .
       dockerfile: Dockerfile.dev
+      platforms:
+        - linux/arm64
     command: bundle exec rails tailwindcss:watch
     volumes:
       - .:/rails
