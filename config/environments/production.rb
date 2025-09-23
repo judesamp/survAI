@@ -54,6 +54,8 @@ Rails.application.configure do
   
   # Use primary database for all Solid components (single database setup)
   config.solid_queue.connects_to = { database: { writing: :primary } }
+  config.solid_cache.connects_to = { database: { writing: :primary } }
+  config.solid_cable.connects_to = { database: { writing: :primary } }
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
