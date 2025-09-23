@@ -21,6 +21,7 @@ class SurveyDataGenerationJob < ApplicationJob
       Rails.logger.info "[JOB #{job_id}] Created #{assignments.count} assignments"
 
       broadcast_progress(survey, "Created #{assignments.count} assignments", 40, job_id)
+      # Dashboard will refresh automatically via Assignment model callbacks
       sleep(0.2)
 
       # Step 2: Generate responses
@@ -40,6 +41,8 @@ class SurveyDataGenerationJob < ApplicationJob
         message = "Generated #{index + 1}/#{assignments_for_responses.count} responses"
         Rails.logger.info "[JOB #{job_id}] Progress: #{progress}% - #{message}"
         broadcast_progress(survey, message, progress, job_id)
+
+        # Dashboard will refresh automatically via Response model callbacks
 
         # Small delay to see progress
         sleep(0.2)
@@ -96,12 +99,7 @@ class SurveyDataGenerationJob < ApplicationJob
       html: render_completion_html(result, job_id)
     )
 
-    # Schedule a page refresh after 2 seconds to show updated metrics
-    Turbo::StreamsChannel.broadcast_append_to(
-      stream_name,
-      target: "data-generation-status",
-      html: %(<script>setTimeout(() => window.location.reload(), 2000);</script>)
-    )
+    # Dashboard already refreshed via model callbacks, no need to refresh again
   end
 
   def broadcast_error(survey, error_message, job_id)
@@ -126,6 +124,46 @@ class SurveyDataGenerationJob < ApplicationJob
       content: render_response_html(response, current_count, total_count)
     )
   end
+
+  # This method is no longer needed as dashboard refreshes are handled by model callbacks
+  # Keeping it commented for reference
+  # def refresh_dashboard_content(survey)
+  #   # Reload survey with associations
+  #   survey.reload
+  #   assignments = survey.assignments.includes(:user, :response)
+  #   questions = survey.questions.includes(:answers)
+  #
+  #   # Calculate fresh metrics
+  #   metrics = {
+  #     response_rate: survey.response_rate,
+  #     completion_rate: survey.completion_rate,
+  #     average_completion_time: survey.average_completion_time,
+  #     average_scale_score: survey.average_scale_score,
+  #     assignments_by_status: survey.assignments_by_status
+  #   }
+  #
+  #   # Render the dashboard content partial
+  #   renderer = ApplicationController.renderer.new
+  #   html = renderer.render(
+  #     partial: 'surveys/dashboard_content',
+  #     locals: {
+  #       survey: survey,
+  #       assignments: assignments,
+  #       questions: questions,
+  #       metrics: metrics
+  #     }
+  #   )
+  #
+  #   # Broadcast the updated dashboard content
+  #   stream_name = "survey_#{survey.id}_data_generation"
+  #   Rails.logger.info "[BROADCAST] Refreshing dashboard content for #{stream_name}"
+  #
+  #   Turbo::StreamsChannel.broadcast_replace_to(
+  #     stream_name,
+  #     target: "dashboard-content",
+  #     html: html
+  #   )
+  # end
 
   def calculate_metrics(survey)
     assignments = survey.assignments.includes(:user, :response)

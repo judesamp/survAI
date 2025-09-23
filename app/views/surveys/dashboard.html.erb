@@ -1,8 +1,7 @@
-<%= turbo_stream_from "survey_#{@survey.id}_data_generation" %>
 <div class="max-w-7xl mx-auto">
   <!-- Header Section -->
-  <div class="mb-8 flex justify-between items-start">
-    <div>
+  <div class="mb-8 flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+    <div class="flex-1 min-w-0">
       <h1 class="text-3xl font-bold text-gray-900"><%= @survey.title %></h1>
       <p class="mt-2 text-sm text-gray-600"><%= @survey.description %></p>
       <div class="mt-2 flex items-center gap-4">
@@ -16,7 +15,7 @@
         <% end %>
       </div>
     </div>
-    <div class="flex gap-2" data-controller="ai-insights">
+    <div class="flex flex-wrap gap-3 lg:flex-nowrap" data-controller="ai-insights">
       <%= form_with url: ai_analysis_survey_path(@survey), method: :post, local: false,
           data: {
             "ai-insights-target" => "form",
@@ -24,11 +23,11 @@
           } do |form| %>
         <%= form.submit "🤖 Generate AI Insights",
             data: { "ai-insights-target" => "button" },
-            class: "inline-flex items-center px-4 py-2 border border-purple-300 shadow-sm text-sm leading-4 font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500" %>
+            class: "inline-flex items-center px-4 py-2 border border-purple-300 shadow-sm text-sm font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 whitespace-nowrap" %>
       <% end %>
-      <%= link_to "📊 Insights History", insights_survey_path(@survey), class: "inline-flex items-center px-3 py-2 border border-indigo-300 shadow-sm text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100" %>
-      <%= link_to "📈 Sentiment Analysis", sentiment_analysis_survey_path(@survey), class: "inline-flex items-center px-3 py-2 border border-pink-300 shadow-sm text-sm leading-4 font-medium rounded-md text-pink-700 bg-pink-50 hover:bg-pink-100" %>
-      <%= link_to "← Back to Survey", @survey, class: "inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+      <%= link_to "📊 Insights History", insights_survey_path(@survey), class: "inline-flex items-center px-4 py-2 border border-indigo-300 shadow-sm text-sm font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 whitespace-nowrap" %>
+      <%= link_to "📈 Sentiment Analysis", sentiment_analysis_survey_path(@survey), class: "inline-flex items-center px-4 py-2 border border-pink-300 shadow-sm text-sm font-medium rounded-md text-pink-700 bg-pink-50 hover:bg-pink-100 whitespace-nowrap" %>
+      <%= link_to "← Back to Survey", @survey, class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 whitespace-nowrap" %>
     </div>
   </div>
 
@@ -37,324 +36,19 @@
     <!-- AI insights will appear here -->
   </div>
 
-  <!-- Real-time updates handled by survey-data-generation Stimulus controller -->
-
-  <!-- Progress indicator area -->
-  <div id="data-generation-status" class="mb-6">
-    <!-- Progress updates will appear here -->
+  <!-- Progress indicator area with subscription -->
+  <div id="data-generation-status-container">
+    <%= render 'data_generation_status', survey: @survey %>
   </div>
 
-  <!-- Key Metrics Cards -->
-  <div id="dashboard-metrics" class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-    <!-- Response Rate -->
-    <div class="bg-white overflow-hidden shadow rounded-lg">
-      <div class="px-4 py-5 sm:p-6">
-        <dt class="text-sm font-medium text-gray-500 truncate">Response Rate</dt>
-        <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= @metrics[:response_rate] %>%</dd>
-        <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
-          <div class="bg-indigo-600 h-2 rounded-full" style="width: <%= @metrics[:response_rate] %>%"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Average Score -->
-    <div class="bg-white overflow-hidden shadow rounded-lg">
-      <div class="px-4 py-5 sm:p-6">
-        <dt class="text-sm font-medium text-gray-500 truncate">Average Score</dt>
-        <dd class="mt-1 text-3xl font-semibold text-gray-900">
-          <% if @metrics[:average_scale_score] %>
-            <%= @metrics[:average_scale_score] %>/10
-          <% else %>
-            N/A
-          <% end %>
-        </dd>
-        <% if @metrics[:average_scale_score] %>
-          <div class="mt-2 flex">
-            <% (1..10).each do |i| %>
-              <svg class="h-4 w-4 <%= i <= @metrics[:average_scale_score] ? 'text-yellow-400' : 'text-gray-300' %>" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-              </svg>
-            <% end %>
-          </div>
-        <% end %>
-      </div>
-    </div>
-
-    <!-- Avg Completion Time -->
-    <div class="bg-white overflow-hidden shadow rounded-lg">
-      <div class="px-4 py-5 sm:p-6">
-        <dt class="text-sm font-medium text-gray-500 truncate">Avg Time to Complete</dt>
-        <dd class="mt-1 text-3xl font-semibold text-gray-900">
-          <% if @metrics[:average_completion_time] > 0 %>
-            <%= @metrics[:average_completion_time] %>m
-          <% else %>
-            N/A
-          <% end %>
-        </dd>
-        <% if @metrics[:average_completion_time] > 0 %>
-          <div class="mt-2 text-sm text-gray-600">
-            <% if @metrics[:average_completion_time] < 5 %>
-              <span class="text-green-600">Quick survey</span>
-            <% elsif @metrics[:average_completion_time] < 10 %>
-              <span class="text-yellow-600">Moderate length</span>
-            <% else %>
-              <span class="text-red-600">Long survey</span>
-            <% end %>
-          </div>
-        <% end %>
-      </div>
-    </div>
-
-    <!-- Total Assignments -->
-    <div class="bg-white overflow-hidden shadow rounded-lg">
-      <div class="px-4 py-5 sm:p-6">
-        <dt class="text-sm font-medium text-gray-500 truncate">Total Assignments</dt>
-        <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= @assignments.count %></dd>
-        <div class="mt-2 text-sm">
-          <span class="text-green-600">✅ <%= @metrics[:assignments_by_status][:completed] %> completed</span> •
-          <span class="text-yellow-600">⏳ <%= @metrics[:assignments_by_status][:in_progress] %> in progress</span> •
-          <span class="text-gray-600">❌ <%= @metrics[:assignments_by_status][:not_started] %> not started</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Assignment Status and Question Analysis -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-    <!-- Assignment Status -->
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div class="px-4 py-5 sm:px-6">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">Assignment Status</h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500">Progress of all assigned users</p>
-      </div>
-      <div class="border-t border-gray-200">
-        <% if @assignments.any? %>
-          <div class="overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <% @assignments.limit(10).each do |assignment| %>
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 h-8 w-8">
-                          <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center">
-                            <span class="text-sm font-medium text-white"><%= assignment.user.initials %></span>
-                          </div>
-                        </div>
-                        <div class="ml-4">
-                          <div class="text-sm font-medium text-gray-900"><%= assignment.user.display_name %></div>
-                          <div class="text-sm text-gray-500"><%= assignment.user.department_display %></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                        <%= case assignment.status
-                            when :completed then 'bg-green-100 text-green-800'
-                            when :in_progress then 'bg-yellow-100 text-yellow-800'
-                            else 'bg-gray-100 text-gray-800'
-                            end %>">
-                        <%= assignment.status_display %>
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <%= time_ago_in_words(assignment.assigned_at) %> ago
-                    </td>
-                  </tr>
-                <% end %>
-              </tbody>
-            </table>
-          </div>
-          <% if @assignments.count > 10 %>
-            <div class="px-6 py-3 bg-gray-50 text-sm text-gray-500 text-center">
-              Showing 10 of <%= @assignments.count %> assignments
-            </div>
-          <% end %>
-        <% else %>
-          <div class="px-6 py-8 text-center">
-            <p class="text-gray-500">No assignments yet. <a href="#" class="text-indigo-600">Create assignments</a> to track responses.</p>
-          </div>
-        <% end %>
-      </div>
-    </div>
-
-    <!-- Question Analysis -->
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div class="px-4 py-5 sm:px-6">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">Question Analysis</h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500">Performance of individual questions</p>
-      </div>
-      <div class="border-t border-gray-200">
-        <% if @questions.any? %>
-          <div class="space-y-4 p-6">
-            <% @questions.each_with_index do |question, index| %>
-              <div class="border-b border-gray-200 pb-4 last:border-b-0">
-                <div class="flex justify-between items-start mb-2">
-                  <h4 class="text-sm font-medium text-gray-900">
-                    Q<%= index + 1 %>: <%= truncate(question.question_text, length: 60) %>
-                  </h4>
-                  <span class="text-xs text-gray-500"><%= question.question_type.humanize %></span>
-                </div>
-
-                <% if question.question_type == 'scale' %>
-                  <%
-                    scores = question.answers.where.not(value: [nil, ""]).pluck(:value).map(&:to_f).select { |v| v > 0 }
-                    avg_score = scores.any? ? (scores.sum / scores.count).round(1) : 0
-                  %>
-                  <div class="flex items-center space-x-3">
-                    <span class="text-sm font-medium text-gray-700">Avg: <%= avg_score %>/10</span>
-                    <div class="flex-1 bg-gray-200 rounded-full h-2">
-                      <div class="bg-indigo-600 h-2 rounded-full" style="width: <%= avg_score * 10 %>%"></div>
-                    </div>
-                    <span class="text-xs text-gray-500"><%= scores.count %> responses</span>
-                  </div>
-                <% else %>
-                  <%
-                    text_answers = question.answers.where.not(value: [nil, ""]).includes(:response => :user)
-                    response_count = text_answers.count
-                  %>
-                  <div class="flex items-center space-x-3">
-                    <span class="text-sm text-gray-700"><%= response_count %> text responses</span>
-                    <% if response_count > 0 %>
-                      <button
-                        class="text-xs text-indigo-600 hover:text-indigo-500"
-                        onclick="toggleResponses('question-<%= question.id %>-responses')"
-                      >
-                        View responses
-                      </button>
-                      <% if response_count >= 3 %>
-                        <button
-                          class="text-xs text-purple-600 hover:text-purple-500"
-                          onclick="generateSummary(<%= question.id %>)"
-                          id="summary-btn-<%= question.id %>"
-                        >
-                          🤖 AI Summary
-                        </button>
-                      <% end %>
-                    <% end %>
-                  </div>
-
-                  <!-- AI Summary Section -->
-                  <% if response_count >= 3 %>
-                    <div id="question-<%= question.id %>-summary" class="hidden mt-3">
-                      <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
-                        <div class="flex items-center gap-2 mb-3">
-                          <span class="text-purple-600">🤖</span>
-                          <h5 class="font-medium text-purple-900">AI Response Summary</h5>
-                        </div>
-                        <div id="summary-content-<%= question.id %>">
-                          <!-- Summary content will be loaded here -->
-                        </div>
-                      </div>
-                    </div>
-                  <% end %>
-
-                  <% if response_count > 0 %>
-                    <div id="question-<%= question.id %>-responses" class="hidden mt-3 space-y-2">
-                      <% text_answers.limit(10).each do |answer| %>
-                        <div class="bg-gray-50 rounded-md p-3 text-sm">
-                          <div class="flex justify-between items-start mb-1">
-                            <span class="font-medium text-gray-900">
-                              <%= answer.response.user&.display_name || "Anonymous" %>
-                            </span>
-                            <span class="text-xs text-gray-500">
-                              <%= time_ago_in_words(answer.response.created_at) %> ago
-                            </span>
-                          </div>
-                          <p class="text-gray-700 leading-relaxed">
-                            "<%= answer.value %>"
-                          </p>
-                        </div>
-                      <% end %>
-                      <% if text_answers.count > 10 %>
-                        <div class="text-xs text-gray-500 text-center pt-2">
-                          Showing 10 of <%= text_answers.count %> responses
-                        </div>
-                      <% end %>
-                    </div>
-                  <% end %>
-                <% end %>
-              </div>
-            <% end %>
-          </div>
-        <% else %>
-          <div class="px-6 py-8 text-center">
-            <p class="text-gray-500">No questions in this survey yet.</p>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </div>
-
-  <!-- Recent Activity -->
-  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-    <div class="px-4 py-5 sm:px-6">
-      <h3 class="text-lg leading-6 font-medium text-gray-900">Recent Activity</h3>
-      <p class="mt-1 max-w-2xl text-sm text-gray-500">Latest survey responses and updates</p>
-    </div>
-    <div class="border-t border-gray-200">
-      <% recent_responses = @survey.responses.includes(:user, :assignment).order(created_at: :desc).limit(10) %>
-      <% if recent_responses.any? %>
-        <ul class="divide-y divide-gray-200">
-          <% recent_responses.each do |response| %>
-            <li class="px-6 py-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <div class="flex-shrink-0 h-8 w-8">
-                    <div class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center">
-                      <span class="text-sm font-medium text-white">
-                        <%= response.user&.initials || "?" %>
-                      </span>
-                    </div>
-                  </div>
-                  <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-900">
-                      <%= response.respondent_name %>
-                      <%= response.completed? ? "completed" : "started" %> the survey
-                    </p>
-                    <p class="text-sm text-gray-500">
-                      <%= time_ago_in_words(response.created_at) %> ago
-                      <% if response.completed? && response.time_to_complete %>
-                        • Took <%= response.time_to_complete %> minutes
-                      <% end %>
-                    </p>
-                  </div>
-                </div>
-                <div class="flex items-center">
-                  <% if response.completed? %>
-                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                      Completed
-                    </span>
-                  <% else %>
-                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                      In Progress
-                    </span>
-                  <% end %>
-                </div>
-              </div>
-            </li>
-          <% end %>
-        </ul>
-      <% else %>
-        <div class="px-6 py-8 text-center">
-          <p class="text-gray-500">No responses yet. Share your survey to start collecting data!</p>
-        </div>
-      <% end %>
-    </div>
-  </div>
+  <!-- Dashboard Content Container - This will be replaced via Turbo Streams -->
+  <%= render 'dashboard_content', survey: @survey, assignments: @assignments, questions: @questions, metrics: @metrics %>
 
   <!-- Assignment Generation Section -->
   <div class="bg-white shadow overflow-hidden sm:rounded-lg mt-8">
     <div class="px-4 py-5 sm:px-6">
       <h3 class="text-lg leading-6 font-medium text-gray-900">Generate Test Data</h3>
-      <p class="mt-1 max-w-2xl text-sm text-gray-500">Create additional assignments and responses for testing dashboard functionality</p>
+      <p class="mt-1 max-w-2xl text-sm text-gray-500">Create additional assignments and responses for testing</p>
     </div>
     <div class="border-t border-gray-200 px-6 py-4">
       <%= form_with url: generate_data_survey_path(@survey), method: :post, local: false, class: "space-y-4" do |form| %>
@@ -366,7 +60,7 @@
                 min: 1,
                 max: 100,
                 class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
-            <p class="mt-1 text-xs text-gray-500">How many users to assign this survey to</p>
+            <p class="mt-1 text-xs text-gray-500">How many users to assign</p>
           </div>
 
           <div>
@@ -375,18 +69,13 @@
                 value: 7,
                 min: 0,
                 class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
-            <p class="mt-1 text-xs text-gray-500">How many of those assignments should have responses</p>
+            <p class="mt-1 text-xs text-gray-500">How many should complete it</p>
           </div>
 
           <div class="flex items-end space-x-2">
             <%= form.submit "Generate Data",
                 class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex-1 justify-center" %>
           </div>
-        </div>
-
-        <div class="text-xs text-gray-500">
-          <strong>Note:</strong> This will create new assignments from users who aren't already assigned to this survey.
-          Response count cannot exceed assignment count. If needed, additional users will be created automatically.
         </div>
       <% end %>
 
@@ -398,166 +87,10 @@
                 confirm: "Are you sure? This will permanently delete all assignments and responses for this survey."
               },
               class: "inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" do %>
-            🗑️ Reset All Assignments & Responses
+            🗑️ Reset All Data
           <% end %>
         </div>
       <% end %>
     </div>
   </div>
 </div>
-
-<script>
-  function toggleResponses(elementId) {
-    const element = document.getElementById(elementId);
-    const button = event.target;
-
-    if (element.classList.contains('hidden')) {
-      element.classList.remove('hidden');
-      button.textContent = 'Hide responses';
-    } else {
-      element.classList.add('hidden');
-      button.textContent = 'View responses';
-    }
-  }
-
-  function generateSummary(questionId) {
-    const summarySection = document.getElementById(`question-${questionId}-summary`);
-    const summaryContent = document.getElementById(`summary-content-${questionId}`);
-    const button = document.getElementById(`summary-btn-${questionId}`);
-
-    // Show section and loading state
-    summarySection.classList.remove('hidden');
-    button.textContent = '🤖 Analyzing...';
-    button.disabled = true;
-
-    summaryContent.innerHTML = `
-      <div class="flex items-center gap-2 text-purple-600">
-        <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <span class="text-sm">AI is analyzing responses...</span>
-      </div>
-    `;
-
-    // Make AJAX request to generate summary
-    fetch(`/surveys/<%= @survey.id %>/questions/${questionId}/summarize`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      displaySummary(questionId, data);
-      button.textContent = '✅ Summary Ready';
-      button.disabled = false;
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      summaryContent.innerHTML = '<p class="text-red-600 text-sm">Error generating summary. Please try again.</p>';
-      button.textContent = '🤖 AI Summary';
-      button.disabled = false;
-    });
-  }
-
-  function displaySummary(questionId, summary) {
-    const summaryContent = document.getElementById(`summary-content-${questionId}`);
-
-    const sentimentColor = {
-      'positive': 'text-green-700 bg-green-100',
-      'negative': 'text-red-700 bg-red-100',
-      'mixed': 'text-yellow-700 bg-yellow-100',
-      'neutral': 'text-gray-700 bg-gray-100'
-    };
-
-    const priorityColor = {
-      'low': 'text-green-700 bg-green-100',
-      'medium': 'text-yellow-700 bg-yellow-100',
-      'high': 'text-red-700 bg-red-100'
-    };
-
-    const sentimentClass = sentimentColor[summary.overall_sentiment] || sentimentColor['neutral'];
-    const priorityClass = priorityColor[summary.priority_level] || priorityColor['medium'];
-
-    summaryContent.innerHTML = `
-      <div class="space-y-4">
-        <!-- Header with metrics -->
-        <div class="flex items-center justify-between flex-wrap gap-2">
-          <span class="text-sm text-purple-700 font-medium">📊 ${summary.response_count} Employee Responses</span>
-          <div class="flex gap-2">
-            <span class="px-2 py-1 rounded-full text-xs font-medium ${sentimentClass}">
-              ${summary.overall_sentiment} sentiment
-            </span>
-            ${summary.priority_level ? `
-              <span class="px-2 py-1 rounded-full text-xs font-medium ${priorityClass}">
-                ${summary.priority_level} priority
-              </span>
-            ` : ''}
-          </div>
-        </div>
-
-        <!-- Executive Summary -->
-        <div class="bg-gray-50 rounded-lg p-3">
-          <p class="text-sm text-gray-700 font-medium mb-2">🎯 Executive Summary</p>
-          <p class="text-sm text-gray-600 leading-relaxed">${summary.summary}</p>
-        </div>
-
-        <!-- Key Themes -->
-        ${summary.key_themes && summary.key_themes.length > 0 ? `
-          <div>
-            <p class="text-sm text-gray-700 font-medium mb-2">📈 Key Themes Identified</p>
-            <ul class="space-y-2">
-              ${summary.key_themes.map(theme => `
-                <li class="text-sm text-gray-600 bg-blue-50 rounded p-2 border-l-4 border-blue-300">
-                  ${theme}
-                </li>
-              `).join('')}
-            </ul>
-          </div>
-        ` : ''}
-
-        <!-- Critical Insights Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          ${summary.top_positive ? `
-            <div class="bg-green-50 rounded-lg p-3 border border-green-200">
-              <span class="text-sm font-medium text-green-800">✅ Strengths to Leverage</span>
-              <p class="text-xs text-green-700 mt-1">${summary.top_positive}</p>
-            </div>
-          ` : ''}
-
-          ${summary.top_concern ? `
-            <div class="bg-orange-50 rounded-lg p-3 border border-orange-200">
-              <span class="text-sm font-medium text-orange-800">⚠️ Priority Concerns</span>
-              <p class="text-xs text-orange-700 mt-1">${summary.top_concern}</p>
-            </div>
-          ` : ''}
-        </div>
-
-        <!-- Action Recommendations -->
-        ${summary.action_recommendations && summary.action_recommendations.length > 0 ? `
-          <div class="bg-purple-50 rounded-lg p-3 border border-purple-200">
-            <p class="text-sm text-purple-800 font-medium mb-2">🎯 Recommended Actions</p>
-            <ul class="space-y-1">
-              ${summary.action_recommendations.map(rec => `
-                <li class="text-xs text-purple-700 flex items-start gap-2">
-                  <span class="text-purple-400 mt-0.5">•</span>
-                  <span>${rec}</span>
-                </li>
-              `).join('')}
-            </ul>
-          </div>
-        ` : ''}
-
-        <!-- Response Patterns -->
-        ${summary.response_patterns ? `
-          <div class="bg-indigo-50 rounded-lg p-3 border border-indigo-200">
-            <p class="text-sm text-indigo-800 font-medium mb-1">👥 Response Patterns</p>
-            <p class="text-xs text-indigo-700">${summary.response_patterns}</p>
-          </div>
-        ` : ''}
-      </div>
-    `;
-  }
-</script>

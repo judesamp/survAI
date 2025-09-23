@@ -12,8 +12,8 @@ class Assignment < ApplicationRecord
   scope :not_started, -> { where(completed: false, response_id: nil) }
 
   before_update :set_completed_at, if: :completed_changed?
-  # after_create :broadcast_assignment_created
-  # after_update :broadcast_assignment_updated
+  after_create_commit :broadcast_dashboard_refresh
+  after_update_commit :broadcast_dashboard_refresh
 
   def status
     return :completed if completed?
@@ -48,49 +48,45 @@ class Assignment < ApplicationRecord
     end
   end
 
-  def broadcast_assignment_created
-    stream_name = "survey_#{survey.id}_data_generation"
-    Rails.logger.info "Broadcasting assignment created to #{stream_name}"
+  def broadcast_dashboard_refresh
+    # Refresh the entire dashboard when an assignment is created or updated
+    Rails.logger.info "[ASSIGNMENT] Broadcasting dashboard refresh for survey #{survey.id}"
 
-    Turbo::StreamsChannel.broadcast_prepend_to(
-      stream_name,
-      target: "data-generation-status",
-      html: %{
-        <div class="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
-          <div class="flex items-center justify-between">
-            <span class="text-blue-900">
-              👤 Assignment created for #{user.display_name}
-            </span>
-            <span class="text-xs text-blue-600">
-              #{created_at.strftime('%H:%M:%S')}
-            </span>
-          </div>
-        </div>
+    # Reload survey with associations
+    survey.reload
+    assignments = survey.assignments.includes(:user, :response)
+    questions = survey.questions.includes(:answers)
+
+    # Calculate fresh metrics
+    metrics = {
+      response_rate: survey.response_rate,
+      completion_rate: survey.completion_rate,
+      average_completion_time: survey.average_completion_time,
+      average_scale_score: survey.average_scale_score,
+      assignments_by_status: survey.assignments_by_status
+    }
+
+    # Render the dashboard content partial
+    renderer = ApplicationController.renderer.new
+    html = renderer.render(
+      partial: 'surveys/dashboard_content',
+      locals: {
+        survey: survey,
+        assignments: assignments,
+        questions: questions,
+        metrics: metrics
       }
     )
-  end
 
-  def broadcast_assignment_updated
-    if completed_changed? && completed?
-      stream_name = "survey_#{survey.id}_data_generation"
-      Rails.logger.info "Broadcasting assignment completed to #{stream_name}"
+    # Broadcast the updated dashboard content
+    stream_name = "survey_#{survey.id}_data_generation"
 
-      Turbo::StreamsChannel.broadcast_prepend_to(
-        stream_name,
-        target: "data-generation-status",
-        html: %{
-          <div class="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
-            <div class="flex items-center justify-between">
-              <span class="text-blue-900">
-                ✅ Assignment completed by #{user.display_name}
-              </span>
-              <span class="text-xs text-blue-600">
-                #{completed_at.strftime('%H:%M:%S')}
-              </span>
-            </div>
-          </div>
-        }
-      )
-    end
+    Turbo::StreamsChannel.broadcast_replace_to(
+      stream_name,
+      target: "dashboard-content",
+      html: html
+    )
+
+    Rails.logger.info "[ASSIGNMENT] Dashboard refresh broadcast completed for survey #{survey.id}"
   end
 end

@@ -158,8 +158,8 @@ class SurveysController < ApplicationController
         notice: "Data generation started in background. You'll see live updates below."
       }
       format.turbo_stream {
-        render turbo_stream: turbo_stream.replace("data-generation-status",
-          partial: "surveys/data_generation_progress",
+        render turbo_stream: turbo_stream.replace("data-generation-status-container",
+          partial: "surveys/data_generation_status",
           locals: { message: "Queued for processing...", percentage: 0, job_id: job_id, survey: @survey })
       }
     end
