@@ -24,6 +24,7 @@ Rails.application.routes.draw do
       post :generate_data
       delete :reset_assignments
       get :insights
+      get :sentiment_analysis
     end
   end
 

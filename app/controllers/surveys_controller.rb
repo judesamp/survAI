@@ -1,5 +1,5 @@
 class SurveysController < ApplicationController
-  before_action :set_survey, only: [:show, :edit, :update, :destroy, :builder, :publish, :preview, :ai_review, :dashboard, :ai_analysis, :generate_data, :reset_assignments, :insights]
+  before_action :set_survey, only: [:show, :edit, :update, :destroy, :builder, :publish, :preview, :ai_review, :dashboard, :ai_analysis, :generate_data, :reset_assignments, :insights, :sentiment_analysis]
   before_action :set_organization
 
   def index
@@ -186,6 +186,43 @@ class SurveysController < ApplicationController
   def insights
     @insights = @survey.survey_insights.recent_first.includes(:generated_by)
     @latest_insight = @insights.first
+  end
+
+  def sentiment_analysis
+    # Check if we have cached results first
+    @sentiment_data = Rails.cache.read("sentiment_analysis_#{@survey.id}")
+
+    if @sentiment_data
+      Rails.logger.info "=== Using cached sentiment analysis for Survey #{@survey.id} ==="
+      return # Render the view with cached data
+    end
+
+    # Check if we have sufficient responses for meaningful analysis
+    if @survey.responses.count < 3
+      redirect_to dashboard_survey_path(@survey),
+                  alert: "Sentiment analysis requires at least 3 responses. Generate more data or collect more responses first."
+      return
+    end
+
+    # Check if we're starting a new analysis
+    if params[:start_analysis] == 'true'
+      Rails.logger.info "=== Starting background sentiment analysis for Survey #{@survey.id} ==="
+
+      # Generate unique job ID
+      job_id = SecureRandom.hex(8)
+
+      # Start background job
+      SentimentAnalysisJob.perform_later(@survey.id, job_id)
+
+      # Always respond with turbo_stream to replace the button with progress
+      render turbo_stream: turbo_stream.replace("sentiment-analysis-status",
+        partial: "surveys/sentiment_analysis_progress",
+        locals: { message: "Queued for processing...", percentage: 0, job_id: job_id, survey: @survey })
+      return
+    end
+
+    # If no cached data and not starting analysis, show the start page
+    @show_start_page = true
   end
 
   private

@@ -1,0 +1,354 @@
+<%= turbo_stream_from "survey_#{@survey.id}_sentiment_analysis" %>
+
+<div class="max-w-7xl mx-auto py-6">
+  <!-- Header Section -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">📊 Sentiment Analysis</h1>
+        <p class="text-gray-600 mt-2">AI-powered emotional intelligence insights for "<%= @survey.title %>"</p>
+      </div>
+      <div class="flex gap-3">
+        <%= link_to "← Dashboard", dashboard_survey_path(@survey),
+            class: "px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors" %>
+        <% if @sentiment_data %>
+          <%= link_to "🔄 Refresh Analysis", sentiment_analysis_survey_path(@survey, start_analysis: true),
+              class: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress/Start Section -->
+  <% if @show_start_page %>
+    <div class="bg-white rounded-xl shadow-lg p-8 mb-8 text-center">
+      <div class="mb-6">
+        <div class="text-6xl mb-4">🤖</div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">AI Sentiment Analysis</h2>
+        <p class="text-gray-600 mb-6">
+          Analyze the emotional tone of all survey responses using advanced AI.<br>
+          This process will examine <%= @survey.responses.count %> responses across <%= @survey.questions.count %> questions.
+        </p>
+      </div>
+
+      <div id="sentiment-analysis-status">
+        <%= link_to sentiment_analysis_survey_path(@survey, start_analysis: true),
+            class: "inline-flex items-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors",
+            data: { turbo_method: :get, turbo_stream: true } do %>
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          Start AI Sentiment Analysis
+        <% end %>
+      </div>
+
+      <div class="mt-6 text-sm text-gray-500">
+        <p>⏱️ Estimated time: 1-3 minutes depending on response count</p>
+        <p>🎯 Analysis includes department breakdowns, trends, and actionable insights</p>
+      </div>
+    </div>
+  <% elsif @sentiment_data.nil? %>
+    <!-- Show progress area if no data yet -->
+    <div id="sentiment-analysis-status" class="mb-8">
+      <!-- Progress updates will appear here -->
+    </div>
+  <% end %>
+
+  <% if @sentiment_data %>
+
+  <!-- Overall Sentiment Summary -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Overall Score -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">Overall Sentiment</h3>
+        <span class="text-2xl">🎯</span>
+      </div>
+      <div class="text-center">
+        <div class="text-4xl font-bold mb-2 <%= sentiment_color_class(@sentiment_data[:overall_sentiment][:score]) %>">
+          <%= (@sentiment_data[:overall_sentiment][:score] * 100).round %>%
+        </div>
+        <div class="text-sm text-gray-600 mb-2">
+          <%= @sentiment_data[:overall_sentiment][:label].titleize %>
+        </div>
+        <div class="text-xs text-gray-500">
+          Based on <%= @sentiment_data[:overall_sentiment][:total_responses] %> responses
+        </div>
+        <div class="mt-3">
+          <div class="bg-gray-200 rounded-full h-2">
+            <div class="bg-gradient-to-r <%= sentiment_gradient(@sentiment_data[:overall_sentiment][:score]) %> h-2 rounded-full transition-all duration-500"
+                 style="width: <%= [@sentiment_data[:overall_sentiment][:confidence], 100].min %>%"></div>
+          </div>
+          <div class="text-xs text-gray-500 mt-1">
+            <%= @sentiment_data[:overall_sentiment][:confidence] %>% confidence
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Priority Level -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">Action Priority</h3>
+        <span class="text-2xl">⚡</span>
+      </div>
+      <div class="text-center">
+        <div class="text-3xl font-bold mb-2 <%= priority_color_class(@sentiment_data[:recommendation_priority]) %>">
+          <%= @sentiment_data[:recommendation_priority].upcase %>
+        </div>
+        <div class="text-sm text-gray-600">
+          <%= priority_description(@sentiment_data[:recommendation_priority]) %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Response Breakdown -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">Response Distribution</h3>
+        <span class="text-2xl">📈</span>
+      </div>
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-green-600">😊 Positive</span>
+          <span class="font-medium text-green-600"><%= @sentiment_data[:detailed_breakdown][:positive_responses] %></span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-gray-600">😐 Neutral</span>
+          <span class="font-medium text-gray-600"><%= @sentiment_data[:detailed_breakdown][:neutral_responses] %></span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-red-600">😟 Negative</span>
+          <span class="font-medium text-red-600"><%= @sentiment_data[:detailed_breakdown][:negative_responses] %></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Insights -->
+  <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 mb-8 border border-purple-200">
+    <h3 class="text-xl font-bold text-purple-900 mb-4">🎯 Key Insights</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <% @sentiment_data[:key_insights].each do |insight| %>
+        <div class="bg-white rounded-lg p-4 border border-purple-200">
+          <p class="text-sm text-purple-800"><%= insight %></p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Department Analysis -->
+  <% if @sentiment_data[:sentiment_by_department].any? %>
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+      <h3 class="text-xl font-bold text-gray-900 mb-6">🏢 Sentiment by Department</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <% @sentiment_data[:sentiment_by_department].each do |dept| %>
+          <div class="border rounded-lg p-4 <%= dept[:sentiment_score] < -0.2 ? 'border-red-200 bg-red-50' : dept[:sentiment_score] > 0.2 ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50' %>">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="font-semibold text-gray-900"><%= dept[:department] %></h4>
+              <span class="text-2xl font-bold <%= sentiment_color_class(dept[:sentiment_score]) %>">
+                <%= (dept[:sentiment_score] * 100).round %>%
+              </span>
+            </div>
+            <div class="text-sm text-gray-600 mb-2">
+              <%= dept[:sentiment_label].titleize %>
+            </div>
+            <div class="text-xs text-gray-500">
+              <%= dept[:employee_count] %> employees, <%= dept[:response_count] %> responses
+            </div>
+
+            <!-- Progress bar -->
+            <div class="mt-3">
+              <div class="bg-gray-200 rounded-full h-2">
+                <div class="<%= sentiment_gradient(dept[:sentiment_score]) %> h-2 rounded-full transition-all duration-500"
+                     style="width: <%= [dept[:confidence], 100].min %>%"></div>
+              </div>
+              <div class="text-xs text-gray-500 mt-1">
+                <%= dept[:confidence] %>% confidence
+              </div>
+            </div>
+
+            <!-- Top concerns/positives -->
+            <% if dept[:top_concerns]&.any? %>
+              <div class="mt-3 p-2 bg-red-100 rounded text-xs">
+                <strong class="text-red-800">Concerns:</strong>
+                <p class="text-red-700 mt-1"><%= dept[:top_concerns].first.truncate(100) %></p>
+              </div>
+            <% end %>
+
+            <% if dept[:top_positives]&.any? %>
+              <div class="mt-2 p-2 bg-green-100 rounded text-xs">
+                <strong class="text-green-800">Strengths:</strong>
+                <p class="text-green-700 mt-1"><%= dept[:top_positives].first.truncate(100) %></p>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Role Analysis -->
+  <% if @sentiment_data[:sentiment_by_role].any? %>
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+      <h3 class="text-xl font-bold text-gray-900 mb-6">👥 Sentiment by Role</h3>
+      <div class="space-y-4">
+        <% @sentiment_data[:sentiment_by_role].each do |role| %>
+          <div class="flex items-center justify-between p-4 border rounded-lg <%= role[:sentiment_score] < -0.2 ? 'border-red-200 bg-red-50' : role[:sentiment_score] > 0.2 ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50' %>">
+            <div class="flex-1">
+              <h4 class="font-semibold text-gray-900"><%= role[:role] %></h4>
+              <p class="text-sm text-gray-600"><%= role[:sentiment_label].titleize %></p>
+              <p class="text-xs text-gray-500"><%= role[:employee_count] %> employees</p>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold <%= sentiment_color_class(role[:sentiment_score]) %>">
+                <%= (role[:sentiment_score] * 100).round %>%
+              </div>
+              <div class="text-xs text-gray-500">
+                <%= role[:confidence] %>% confidence
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Question-by-Question Analysis -->
+  <% if @sentiment_data[:sentiment_by_question].any? %>
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+      <h3 class="text-xl font-bold text-gray-900 mb-6">❓ Sentiment by Question</h3>
+      <div class="space-y-4">
+        <% @sentiment_data[:sentiment_by_question].each do |question| %>
+          <div class="border rounded-lg p-4">
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex-1">
+                <h4 class="font-medium text-gray-900 mb-2"><%= question[:question_text] %></h4>
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  <%= question[:question_type].humanize %>
+                </span>
+              </div>
+              <div class="text-right ml-4">
+                <div class="text-xl font-bold <%= sentiment_color_class(question[:sentiment_score]) %>">
+                  <%= (question[:sentiment_score] * 100).round %>%
+                </div>
+                <div class="text-sm text-gray-600"><%= question[:sentiment_label].titleize %></div>
+                <div class="text-xs text-gray-500"><%= question[:response_count] %> responses</div>
+              </div>
+            </div>
+
+            <!-- Sample responses -->
+            <% if question[:sample_responses]&.any? %>
+              <div class="mt-3 p-3 bg-gray-50 rounded">
+                <h5 class="text-sm font-medium text-gray-700 mb-2">Sample Response:</h5>
+                <p class="text-sm text-gray-600 italic">"<%= question[:sample_responses].first.truncate(150) %>"</p>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Trend Analysis -->
+  <% if @sentiment_data[:sentiment_trends][:daily_trends].any? %>
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+      <h3 class="text-xl font-bold text-gray-900 mb-6">📈 Sentiment Trends</h3>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+          <h4 class="font-medium text-gray-700 mb-4">Daily Sentiment Over Time</h4>
+          <div class="space-y-2">
+            <% @sentiment_data[:sentiment_trends][:daily_trends].each do |day| %>
+              <div class="flex items-center justify-between p-2 border rounded">
+                <span class="text-sm text-gray-600"><%= day[:date].strftime("%b %d") %></span>
+                <div class="flex items-center gap-3">
+                  <div class="w-24 bg-gray-200 rounded-full h-2">
+                    <div class="<%= sentiment_gradient(day[:sentiment_score]) %> h-2 rounded-full"
+                         style="width: <%= [(day[:sentiment_score] + 1) * 50, 100].min %>%"></div>
+                  </div>
+                  <span class="text-sm font-medium <%= sentiment_color_class(day[:sentiment_score]) %>">
+                    <%= (day[:sentiment_score] * 100).round %>%
+                  </span>
+                  <span class="text-xs text-gray-500">(<%= day[:response_count] %>)</span>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-medium text-gray-700 mb-4">Trend Summary</h4>
+          <div class="space-y-3">
+            <div class="p-3 bg-blue-50 rounded">
+              <div class="text-sm font-medium text-blue-900">Direction</div>
+              <div class="text-lg font-bold text-blue-800">
+                <%= @sentiment_data[:sentiment_trends][:trend_direction].titleize %>
+                <%= trend_icon(@sentiment_data[:sentiment_trends][:trend_direction]) %>
+              </div>
+            </div>
+            <div class="p-3 bg-purple-50 rounded">
+              <div class="text-sm font-medium text-purple-900">Volatility</div>
+              <div class="text-lg font-bold text-purple-800">
+                <%= (@sentiment_data[:sentiment_trends][:volatility] * 100).round(1) %>%
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Most Positive/Negative Responses -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Most Positive -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <h3 class="text-xl font-bold text-green-900 mb-4">😊 Most Positive Responses</h3>
+      <div class="space-y-3">
+        <% @sentiment_data[:detailed_breakdown][:most_positive_responses].first(3).each do |response| %>
+          <div class="p-3 bg-green-50 border border-green-200 rounded">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-xs font-medium text-green-800">
+                Score: <%= (response[:score] * 100).round %>%
+              </span>
+            </div>
+            <p class="text-sm text-green-700 italic">"<%= response[:text].truncate(200) %>"</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Most Negative -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <h3 class="text-xl font-bold text-red-900 mb-4">😟 Most Critical Responses</h3>
+      <div class="space-y-3">
+        <% @sentiment_data[:detailed_breakdown][:most_negative_responses].first(3).each do |response| %>
+          <div class="p-3 bg-red-50 border border-red-200 rounded">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-xs font-medium text-red-800">
+                Score: <%= (response[:score] * 100).round %>%
+              </span>
+            </div>
+            <p class="text-sm text-red-700 italic">"<%= response[:text].truncate(200) %>"</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <% end %>
+</div>
+
+<script>
+  // Add some nice animation effects
+  document.addEventListener('DOMContentLoaded', function() {
+    // Animate progress bars
+    const progressBars = document.querySelectorAll('[style*="width:"]');
+    progressBars.forEach(bar => {
+      const width = bar.style.width;
+      bar.style.width = '0%';
+      setTimeout(() => {
+        bar.style.width = width;
+      }, 100);
+    });
+  });
+</script>
+
