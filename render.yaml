@@ -30,7 +30,7 @@ services:
     name: survai-worker
     env: docker
     dockerfilePath: ./Dockerfile
-    dockerCommand: "bundle exec rake solid_queue:start"
+    dockerCommand: "bundle exec rails runner 'SolidQueue::Supervisor.start'"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
