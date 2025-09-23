@@ -33,8 +33,9 @@ Rails.application.routes.draw do
   post "s/:slug", to: "responses#create"
   get "s/:slug/complete", to: "responses#complete", as: :survey_complete
 
-  resource :session
-  resources :passwords, param: :token
+  # Remove authentication routes for hackathon demo
+  # resource :session
+  # resources :passwords, param: :token
   resources :survey_insights, only: [:index, :show]
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

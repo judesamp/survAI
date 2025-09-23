@@ -1,7 +1,8 @@
 class User < ApplicationRecord
   # Disable password requirement for prototype
   # has_secure_password
-  has_many :sessions, dependent: :destroy
+  # Remove sessions for hackathon demo
+  # has_many :sessions, dependent: :destroy
   belongs_to :organization, optional: true
   has_many :created_surveys, class_name: 'Survey', foreign_key: 'created_by_id'
   has_many :responses
