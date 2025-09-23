@@ -89,12 +89,12 @@ class SurveyAiGenerator
       }
 
       Rules:
-      - question_type must be either "text", "scale","pick_one", or "pick_any"
+      - question_type must be either "text", "scale", "pick_one", "pick_any"
       - pick_one questions must include an "options" array with at least 2 options
       - pick_any questions must include an "options" array with at least 2 options
-      - Scale questions should include "(1 = poor, 10 = excellent)" or similar in the question text
-      - Scale questions should not include an options array
-      - Generate 4-6 relevant questions
+      - scale question_type questions must include a rating scale "(1 = poor, 10 = excellent)" or similar in the question text
+      - scale question_type questions must not include an options array
+      - Generate 4-6 relevant questions with at least one of each question_type
       - Mix of required and optional questions
       - Make questions specific to the survey topic
       - Required field must be boolean (true/false)
