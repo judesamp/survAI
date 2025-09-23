@@ -48,7 +48,7 @@
               name="prompt"
               id="prompt"
               rows="4"
-              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              class="block p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
               placeholder="e.g., Create a customer satisfaction survey for my coffee shop. I want to know about service quality, product satisfaction, and areas for improvement."
               data-survey-prompt-target="prompt"
               required
@@ -87,7 +87,7 @@
                   <input type="text"
                          name="organization_context"
                          id="organization_context"
-                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                         class="block p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
                          placeholder="e.g., iSolved, Acme Corp, Green Valley Hospital"
                          data-survey-prompt-target="organizationContext">
                   <p class="mt-1 text-xs text-gray-500">
@@ -103,7 +103,7 @@
                   <input type="text"
                          name="target_audience"
                          id="target_audience"
-                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                         class="block p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
                          placeholder="e.g., employees, customers, conference attendees, students"
                          data-survey-prompt-target="targetAudience">
                   <p class="mt-1 text-xs text-gray-500">
@@ -147,7 +147,7 @@
           <%= link_to "Manual Creation", new_survey_path, class: "px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" %>
           <%= form.submit "✨ Generate Survey",
               data: { "survey-generator-target" => "button" },
-              class: "px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer" %>
+              class: "px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 cursor-pointer" %>
         </div>
       </div>
     </div>

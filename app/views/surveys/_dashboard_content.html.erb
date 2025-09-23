@@ -7,7 +7,7 @@
       <dt class="text-sm font-medium text-gray-500 truncate">Response Rate</dt>
       <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= metrics[:response_rate] %>%</dd>
       <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
-        <div class="bg-indigo-600 h-2 rounded-full" style="width: <%= metrics[:response_rate] %>%"></div>
+        <div class="bg-sky-600 h-2 rounded-full" style="width: <%= metrics[:response_rate] %>%"></div>
       </div>
     </div>
   </div>
@@ -99,7 +99,7 @@
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <div class="flex-shrink-0 h-8 w-8">
-                        <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center">
+                        <div class="h-8 w-8 rounded-full bg-sky-500 flex items-center justify-center">
                           <span class="text-sm font-medium text-white"><%= assignment.user.initials %></span>
                         </div>
                       </div>
@@ -134,7 +134,7 @@
         <% end %>
       <% else %>
         <div class="px-6 py-8 text-center">
-          <p class="text-gray-500">No assignments yet. <a href="#" class="text-indigo-600">Create assignments</a> to track responses.</p>
+          <p class="text-gray-500">No assignments yet. <a href="#" class="text-sky-600">Create assignments</a> to track responses.</p>
         </div>
       <% end %>
     </div>
@@ -192,7 +192,7 @@
                     <span class="text-sm text-gray-700"><%= response_count %> text responses</span>
                     <% if response_count > 0 %>
                       <button
-                        class="text-xs text-indigo-600 hover:text-indigo-500"
+                        class="text-xs text-sky-600 hover:text-sky-500"
                         onclick="toggleResponses('question-<%= question.id %>-responses')"
                       >
                         View responses
@@ -480,9 +480,9 @@
 
         <!-- Response Patterns -->
         ${summary.response_patterns ? `
-          <div class="bg-indigo-50 rounded-lg p-3 border border-indigo-200">
-            <p class="text-sm text-indigo-800 font-medium mb-1">👥 Response Patterns</p>
-            <p class="text-xs text-indigo-700">${summary.response_patterns}</p>
+          <div class="bg-sky-50 rounded-lg p-3 border border-sky-200">
+            <p class="text-sm text-sky-800 font-medium mb-1">👥 Response Patterns</p>
+            <p class="text-xs text-sky-700">${summary.response_patterns}</p>
           </div>
         ` : ''}
       </div>

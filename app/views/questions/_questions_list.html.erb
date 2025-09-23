@@ -30,7 +30,7 @@
                 <% if index < questions.count - 1 %>
                   <%= button_to "↓", move_down_survey_question_path(survey, question), method: :patch, class: "text-gray-400 hover:text-gray-600" %>
                 <% end %>
-                <%= link_to "Edit", edit_survey_question_path(survey, question), class: "text-indigo-600 hover:text-indigo-900 text-sm" %>
+                <%= link_to "Edit", edit_survey_question_path(survey, question), class: "text-sky-600 hover:text-sky-900 text-sm" %>
                 <%= button_to "Delete", survey_question_path(survey, question), method: :delete, data: { confirm: "Are you sure?" }, class: "text-red-600 hover:text-red-900 text-sm ml-2" %>
               </div>
             </div>

@@ -17,7 +17,7 @@
 
   <div class="p-6 space-y-6">
     <!-- Executive Summary -->
-    <div class="bg-white rounded-lg p-4 border-l-4 border-indigo-500">
+    <div class="bg-white rounded-lg p-4 border-l-4 border-sky-500">
       <h4 class="text-lg font-medium text-gray-900 mb-2">📋 Executive Summary</h4>
       <p class="text-gray-700 leading-relaxed"><%= insights["executive_summary"] %></p>
     </div>
@@ -30,7 +30,7 @@
       <ul class="space-y-2">
         <% insights["key_findings"].each do |finding| %>
           <li class="flex items-start gap-2">
-            <svg class="h-5 w-5 text-indigo-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="h-5 w-5 text-sky-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
             </svg>
             <span class="text-gray-700"><%= finding %></span>
@@ -108,23 +108,23 @@
     <% end %>
 
     <!-- Recommended Actions -->
-    <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
-      <h4 class="text-lg font-medium text-indigo-800 mb-3 flex items-center gap-2">
+    <div class="bg-sky-50 rounded-lg p-4 border border-sky-200">
+      <h4 class="text-lg font-medium text-sky-800 mb-3 flex items-center gap-2">
         🎯 Recommended Actions
       </h4>
       <% if insights["recommended_actions"]&.any? %>
         <ol class="space-y-3">
           <% insights["recommended_actions"].each_with_index do |action, index| %>
             <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 h-6 w-6 bg-indigo-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+              <span class="flex-shrink-0 h-6 w-6 bg-sky-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                 <%= index + 1 %>
               </span>
-              <span class="text-indigo-700 text-sm"><%= action %></span>
+              <span class="text-sky-700 text-sm"><%= action %></span>
             </li>
           <% end %>
         </ol>
       <% else %>
-        <p class="text-indigo-600 text-sm italic">Continue current practices and monitor results.</p>
+        <p class="text-sky-600 text-sm italic">Continue current practices and monitor results.</p>
       <% end %>
     </div>
 
@@ -161,10 +161,10 @@
         Analysis generated <%= Time.current.strftime("%B %d, %Y at %I:%M %p") %>
       </div>
       <div class="flex gap-2">
-        <button class="text-sm text-indigo-600 hover:text-indigo-500 font-medium">
+        <button class="text-sm text-sky-600 hover:text-sky-500 font-medium">
           📄 Export Report
         </button>
-        <button class="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
+        <button class="text-sm text-sky-600 hover:text-sky-500 font-medium"
                 onclick="window.location.reload()">
           🔄 Regenerate Analysis
         </button>

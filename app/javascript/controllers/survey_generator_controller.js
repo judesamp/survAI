@@ -35,7 +35,7 @@ export default class extends Controller {
       <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
           <div class="flex flex-col items-center">
-            <svg class="animate-spin h-12 w-12 text-indigo-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin h-12 w-12 text-sky-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -45,7 +45,7 @@ export default class extends Controller {
             <div class="w-full space-y-3" id="progress-steps">
               <div class="step-item" data-step="1">
                 <div class="flex items-center">
-                  <div class="step-indicator w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-medium">
+                  <div class="step-indicator w-8 h-8 rounded-full bg-sky-600 text-white flex items-center justify-center text-sm font-medium">
                     ✓
                   </div>
                   <div class="ml-3 text-sm font-medium text-gray-900">Analyzing your requirements</div>
@@ -127,12 +127,12 @@ export default class extends Controller {
 
         if (stepNum < this.currentStep) {
           // Completed step
-          indicator.className = 'step-indicator w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-medium'
+          indicator.className = 'step-indicator w-8 h-8 rounded-full bg-sky-600 text-white flex items-center justify-center text-sm font-medium'
           indicator.innerHTML = '✓'
           text.className = 'ml-3 text-sm font-medium text-gray-900'
         } else if (stepNum === this.currentStep) {
           // Current step - add animation
-          indicator.className = 'step-indicator w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-medium animate-pulse'
+          indicator.className = 'step-indicator w-8 h-8 rounded-full bg-sky-600 text-white flex items-center justify-center text-sm font-medium animate-pulse'
           indicator.innerHTML = stepNum.toString()
           text.className = 'ml-3 text-sm font-medium text-gray-900'
         } else {

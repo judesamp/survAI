@@ -26,8 +26,8 @@
             data: { "ai-insights-target" => "button" },
             class: "inline-flex items-center px-4 py-2 border border-purple-300 shadow-sm text-sm font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 whitespace-nowrap" %>
       <% end %>
-      <%= link_to "📊 Insights History", insights_survey_path(@survey), class: "inline-flex items-center px-4 py-2 border border-indigo-300 shadow-sm text-sm font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 whitespace-nowrap" %>
-      <%= link_to "📈 Sentiment Analysis", sentiment_analysis_survey_path(@survey), class: "inline-flex items-center px-4 py-2 border border-pink-300 shadow-sm text-sm font-medium rounded-md text-pink-700 bg-pink-50 hover:bg-pink-100 whitespace-nowrap" %>
+      <%= link_to "📊 Insights History", insights_survey_path(@survey), class: "inline-flex items-center px-4 py-2 border border-sky-300 shadow-sm text-sm font-medium rounded-md text-sky-700 bg-sky-50 hover:bg-sky-100 whitespace-nowrap" %>
+      <%= link_to "📈 Sentiment Analysis", sentiment_analysis_survey_path(@survey), class: "inline-flex items-center px-4 py-2 border border-pink-300 shadow-sm text-sm font-medium rounded-md text-pink-700 bg-sky-50 hover:bg-sky-100 whitespace-nowrap" %>
       <%= link_to "← Back to Survey", @survey, class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 whitespace-nowrap" %>
     </div>
   </div>
@@ -60,7 +60,7 @@
                 value: 10,
                 min: 1,
                 max: 100,
-                class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+                class: "block p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm" %>
             <p class="mt-1 text-xs text-gray-500">How many users to assign</p>
           </div>
 
@@ -69,13 +69,13 @@
             <%= form.number_field :responses_count,
                 value: 7,
                 min: 0,
-                class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+                class: "block p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm" %>
             <p class="mt-1 text-xs text-gray-500">How many should complete it</p>
           </div>
 
           <div class="flex items-end space-x-2">
             <%= form.submit "Generate Data",
-                class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex-1 justify-center" %>
+                class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 flex-1 justify-center" %>
           </div>
         </div>
       <% end %>

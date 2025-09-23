@@ -235,12 +235,12 @@ class SurveyDataGenerationJob < ApplicationJob
 
   def render_response_html(response, current_count, total_count)
     %{
-      <div class="mb-2 p-2 bg-indigo-50 border border-indigo-200 rounded text-sm">
+      <div class="mb-2 p-2 bg-sky-50 border border-sky-200 rounded text-sm">
         <div class="flex items-center justify-between">
-          <span class="text-indigo-900">
+          <span class="text-sky-900">
             ✅ Response #{current_count}/#{total_count} - #{response.user.display_name}
           </span>
-          <span class="text-xs text-indigo-600">
+          <span class="text-xs text-sky-600">
             #{response.answers.count} answers
           </span>
         </div>
