@@ -2,7 +2,7 @@ services:
   - type: web
     name: survai
     env: docker
-    plan: free
+    plan: starter
     dockerfilePath: ./Dockerfile
     buildCommand: "./bin/render-build.sh"
     envVars:
