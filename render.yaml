@@ -29,6 +29,7 @@ services:
   - type: worker
     name: survai-worker
     env: docker
+    plan: starter
     dockerfilePath: ./Dockerfile
     envVars:
       - key: RENDER_SERVICE_TYPE
