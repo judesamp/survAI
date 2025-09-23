@@ -50,44 +50,53 @@ class Response < ApplicationRecord
   end
 
   def broadcast_dashboard_refresh
-    # Refresh the entire dashboard when a response is created or completed
-    Rails.logger.info "[RESPONSE] Broadcasting dashboard refresh for survey #{survey.id}"
+    # Skip broadcasting during database seeding or if Redis is not available
+    return if defined?(ActiveRecord::Tasks::DatabaseTasks) && caller.any? { |line| line.include?('db:seed') }
+    
+    begin
+      # Refresh the entire dashboard when a response is created or completed
+      Rails.logger.info "[RESPONSE] Broadcasting dashboard refresh for survey #{survey.id}"
 
-    # Reload survey with associations
-    survey.reload
-    assignments = survey.assignments.includes(:user, :response)
-    questions = survey.questions.includes(:answers)
+      # Reload survey with associations
+      survey.reload
+      assignments = survey.assignments.includes(:user, :response)
+      questions = survey.questions.includes(:answers)
 
-    # Calculate fresh metrics
-    metrics = {
-      response_rate: survey.response_rate,
-      completion_rate: survey.completion_rate,
-      average_completion_time: survey.average_completion_time,
-      average_scale_score: survey.average_scale_score,
-      assignments_by_status: survey.assignments_by_status
-    }
-
-    # Render the dashboard content partial
-    renderer = ApplicationController.renderer.new
-    html = renderer.render(
-      partial: 'surveys/dashboard_content',
-      locals: {
-        survey: survey,
-        assignments: assignments,
-        questions: questions,
-        metrics: metrics
+      # Calculate fresh metrics
+      metrics = {
+        response_rate: survey.response_rate,
+        completion_rate: survey.completion_rate,
+        average_completion_time: survey.average_completion_time,
+        average_scale_score: survey.average_scale_score,
+        assignments_by_status: survey.assignments_by_status
       }
-    )
 
-    # Broadcast the updated dashboard content
-    stream_name = "survey_#{survey.id}_data_generation"
+      # Render the dashboard content partial
+      renderer = ApplicationController.renderer.new
+      html = renderer.render(
+        partial: 'surveys/dashboard_content',
+        locals: {
+          survey: survey,
+          assignments: assignments,
+          questions: questions,
+          metrics: metrics
+        }
+      )
 
-    Turbo::StreamsChannel.broadcast_replace_to(
-      stream_name,
-      target: "dashboard-content",
-      html: html
-    )
+      # Broadcast the updated dashboard content
+      stream_name = "survey_#{survey.id}_data_generation"
 
-    Rails.logger.info "[RESPONSE] Dashboard refresh broadcast completed for survey #{survey.id}"
+      Turbo::StreamsChannel.broadcast_replace_to(
+        stream_name,
+        target: "dashboard-content",
+        html: html
+      )
+
+      Rails.logger.info "[RESPONSE] Dashboard refresh broadcast completed for survey #{survey.id}"
+      
+    rescue => e
+      Rails.logger.warn "[RESPONSE] Broadcasting failed for survey #{survey.id}: #{e.message}"
+      # Continue execution even if broadcasting fails
+    end
   end
 end

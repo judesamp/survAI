@@ -27,4 +27,8 @@ bundle exec rails db:migrate
 echo "Setting up Rails databases..."
 bundle exec rails db:migrate:cache db:migrate:queue db:migrate:cable
 
+# Seed the database
+echo "Seeding database..."
+bundle exec rails db:seed
+
 echo "Build process completed!"

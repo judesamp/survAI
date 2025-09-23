@@ -49,10 +49,14 @@ class Assignment < ApplicationRecord
   end
 
   def broadcast_dashboard_refresh
-    # Refresh the entire dashboard when an assignment is created or updated
-    Rails.logger.info "[ASSIGNMENT] Broadcasting dashboard refresh for survey #{survey.id}"
+    # Skip broadcasting during database seeding or if Redis is not available
+    return if defined?(ActiveRecord::Tasks::DatabaseTasks) && caller.any? { |line| line.include?('db:seed') }
+    
+    begin
+      # Refresh the entire dashboard when an assignment is created or updated
+      Rails.logger.info "[ASSIGNMENT] Broadcasting dashboard refresh for survey #{survey.id}"
 
-    # Reload survey with associations
+      # Reload survey with associations
     survey.reload
     assignments = survey.assignments.includes(:user, :response)
     questions = survey.questions.includes(:answers)
@@ -88,5 +92,10 @@ class Assignment < ApplicationRecord
     )
 
     Rails.logger.info "[ASSIGNMENT] Dashboard refresh broadcast completed for survey #{survey.id}"
+    
+    rescue => e
+      Rails.logger.warn "[ASSIGNMENT] Broadcasting failed for survey #{survey.id}: #{e.message}"
+      # Continue execution even if broadcasting fails
+    end
   end
 end
