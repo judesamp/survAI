@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_23_191700) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_23_211019) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -157,10 +157,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_23_191700) do
     t.index ["scheduled_at", "finished_at"], name: "index_solid_queue_jobs_for_alerting"
   end
 
-  create_table "solid_queue_paused_queues", force: :cascade do |t|
+  create_table "solid_queue_pauses", force: :cascade do |t|
     t.string "queue_name", null: false
     t.datetime "created_at", null: false
-    t.index ["queue_name"], name: "index_solid_queue_paused_queues_on_queue_name", unique: true
+    t.index ["queue_name"], name: "index_solid_queue_pauses_on_queue_name", unique: true
   end
 
   create_table "solid_queue_processes", force: :cascade do |t|
@@ -171,7 +171,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_23_191700) do
     t.string "hostname"
     t.text "metadata"
     t.datetime "created_at", null: false
+    t.string "name", null: false
     t.index ["last_heartbeat_at"], name: "index_solid_queue_processes_on_last_heartbeat_at"
+    t.index ["name", "supervisor_id"], name: "index_solid_queue_processes_on_name_and_supervisor_id", unique: true
     t.index ["supervisor_id"], name: "index_solid_queue_processes_on_supervisor_id"
   end
 
@@ -181,7 +183,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_23_191700) do
     t.integer "priority", default: 0, null: false
     t.datetime "created_at", null: false
     t.index ["job_id"], name: "index_solid_queue_ready_executions_on_job_id", unique: true
-    t.index ["queue_name", "priority", "job_id"], name: "index_solid_queue_poll_all"
+    t.index ["priority", "job_id"], name: "index_solid_queue_poll_all"
     t.index ["queue_name", "priority", "job_id"], name: "index_solid_queue_poll_by_queue"
   end
 
@@ -201,7 +203,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_23_191700) do
     t.string "class_name"
     t.text "arguments"
     t.string "queue_name"
-    t.integer "priority", default: 0, null: false
+    t.integer "priority", default: 0
     t.boolean "static", default: true, null: false
     t.text "description"
     t.datetime "created_at", null: false
