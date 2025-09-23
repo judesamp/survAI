@@ -99,6 +99,7 @@ class SurveyAiGenerator
       - Make questions specific to the survey topic
       - Required field must be boolean (true/false)
       - IMPORTANT: If an organization/company name is provided, include it naturally in relevant questions
+      - IMPORTANT: If an organization/company name is not provided, do not make up a name or use placeholders like [Company]
       - For employee surveys with org name: Use "at [Organization]" in satisfaction/role questions
       - For customer surveys with org name: Use "at/with [Organization]" in experience questions
 

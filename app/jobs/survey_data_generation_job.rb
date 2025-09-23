@@ -79,7 +79,7 @@ class SurveyDataGenerationJob < ApplicationJob
     # Use broadcast_replace_to to ensure the element is fully replaced
     Turbo::StreamsChannel.broadcast_replace_to(
       stream_name,
-      target: "data-generation-status",
+      target: "data-generation-status-container",
       html: html_content
     )
 
@@ -95,7 +95,7 @@ class SurveyDataGenerationJob < ApplicationJob
     # Broadcast completion status using html to avoid template wrapper
     Turbo::StreamsChannel.broadcast_replace_to(
       stream_name,
-      target: "data-generation-status",
+      target: "data-generation-status-container",
       html: render_completion_html(result, job_id)
     )
 
@@ -104,11 +104,11 @@ class SurveyDataGenerationJob < ApplicationJob
 
   def broadcast_error(survey, error_message, job_id)
     stream_name = "survey_#{survey.id}_data_generation"
-    Rails.logger.info "Broadcasting error to #{stream_name}: #{error_message}"
+    Rails.logger.error "Broadcasting error to #{stream_name}: #{error_message}"
 
     Turbo::StreamsChannel.broadcast_replace_to(
       stream_name,
-      target: "data-generation-status",
+      target: "data-generation-status-container",
       html: render_error_html(error_message, job_id)
     )
   end
