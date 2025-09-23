@@ -19,7 +19,7 @@ services:
       - key: SECRET_KEY_BASE
         generateValue: true
       - key: RAILS_MASTER_KEY
-        sync: false
+        value: "59f79b7b1befa894d8d405073c410f4b"
 
 databases:
   - name: survai-db
