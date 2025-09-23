@@ -23,9 +23,13 @@ bundle exec rails assets:precompile
 echo "Running database migrations..."
 bundle exec rails db:migrate
 
+# Prepare database (create, migrate, or load schema as needed)
+echo "Preparing database..."
+bundle exec rails db:prepare
+
 # Setup cache, queue, and cable databases
 echo "Setting up Rails databases..."
-bundle exec rails db:migrate:cache db:migrate:queue db:migrate:cable
+bundle exec rails db:cache:create db:queue:create db:cable:create
 
 # Seed the database
 echo "Seeding database..."
