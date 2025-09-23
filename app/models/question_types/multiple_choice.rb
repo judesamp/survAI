@@ -1,5 +1,5 @@
 module QuestionTypes
-  class MultipleChoice < Base
+  class MultipleChoice
     def self.type_key
       :pick_any
     end
