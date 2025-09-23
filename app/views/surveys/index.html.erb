@@ -86,7 +86,6 @@
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       var surveyId = btn.dataset.surveyid;
-      console.log("Survey ID to delete:", surveyId);
       var form = document.getElementById('delete-survey-form');
       form.action = '/surveys/' + surveyId;
       document.getElementById('delete-modal').classList.remove('hidden');

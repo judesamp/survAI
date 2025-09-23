@@ -7,9 +7,6 @@
       <h1 class="text-3xl font-bold text-gray-900"><%= @survey.title %></h1>
       <p class="mt-2 text-sm text-gray-600"><%= @survey.description %></p>
       <div class="mt-2 flex items-center gap-4">
-        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= @survey.published? ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
-          <%= @survey.status.humanize %>
-        </span>
         <% if @survey.published? %>
           <%= link_to "View Public Link", take_survey_path(@survey.slug), target: "_blank", class: "text-sm text-indigo-600 hover:text-indigo-500" %>
         <% end %>

@@ -11,6 +11,7 @@ class Response < ApplicationRecord
   scope :incomplete, -> { where(completed_at: nil) }
 
   before_create :set_started_at
+  before_destroy :nullify_assignment_references
   after_create_commit :broadcast_dashboard_refresh
   after_update :update_assignment_status, if: :completed_at_changed?
   after_update_commit :broadcast_dashboard_refresh, if: :completed_at_changed?
@@ -37,6 +38,11 @@ class Response < ApplicationRecord
 
   def set_started_at
     self.started_at ||= Time.current
+  end
+
+  def nullify_assignment_references
+    # Clear any assignment references to this response before deletion
+    Assignment.where(response_id: id).update_all(response_id: nil, completed: false, completed_at: nil)
   end
 
   def update_assignment_status
