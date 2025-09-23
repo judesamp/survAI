@@ -10,11 +10,6 @@ services:
         fromDatabase:
           name: survai-db
           property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: survai-redis
-          property: connectionString
       - key: RAILS_ENV
         value: production
       - key: RAILS_SERVE_STATIC_FILES
@@ -26,11 +21,7 @@ services:
       - key: RAILS_MASTER_KEY
         sync: false
 
-  - type: redis
-    name: survai-redis
-    plan: free
-    maxmemoryPolicy: allkeys-lru
-
 databases:
   - name: survai-db
+    plan: free
     plan: free
