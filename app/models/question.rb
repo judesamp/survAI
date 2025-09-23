@@ -4,7 +4,7 @@ class Question < ApplicationRecord
 
   validates :question_text, presence: true
   validates :question_type, presence: true,
-            inclusion: { in: %w[text scale] }
+            inclusion: { in: %w[text scale pick_one pick_any] }
   validates :position, presence: true, numericality: { greater_than_or_equal_to: 0 }
 
   serialize :settings, coder: JSON

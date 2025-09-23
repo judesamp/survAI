@@ -47,6 +47,11 @@ class QuestionsController < ApplicationController
   end
 
   def update
+    if ["pick_one", "pick_any"].include?(question_params[:question_type]) && (question_params[:options].nil? || question_params[:options].size < 2)
+      @question.assign_attributes(question_params)
+      @question.errors.add(:options, "must have at least two options for this question type.")
+      render :edit, status: :unprocessable_entity and return
+    end
     if @question.update(question_params)
       redirect_to builder_survey_path(@survey), notice: 'Question was successfully updated.'
     else
@@ -121,12 +126,14 @@ class QuestionsController < ApplicationController
   end
 
   def question_params
-    permitted_params = params.require(:question).permit(:question_text, :question_type, :required, :position)
+    permitted_params = params.require(:question).permit(:question_text, :question_type, :required, :position, :options_text)
 
-    # Handle options for choice-based questions
-    if params[:question][:options_text].present?
-      options_array = params[:question][:options_text].split("\n").map(&:strip).reject(&:blank?)
+    if ["pick_one", "pick_any"].include?(permitted_params[:question_type])
+      options_array = (permitted_params.delete(:options_text) || "").split("\n").map(&:strip).reject(&:blank?)
       permitted_params[:options] = options_array
+    else
+      permitted_params.delete(:options_text)
+      permitted_params[:options] = []
     end
 
     permitted_params

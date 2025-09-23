@@ -18,7 +18,8 @@
                 <p class="mt-1 text-sm text-gray-500">
                   Type: <%= question.question_type.humanize %>
                   <% if question.options.any? %>
-                    • Options: <%= question.options.join(", ") %>
+                    <br>
+                    Options: <%= question.options.join(", ") %>
                   <% end %>
                 </p>
               </div>

@@ -33,11 +33,13 @@ class SurveyAiGenerator
         title: parsed_survey['title'],
         description: parsed_survey['description'],
         questions: parsed_survey['questions'].map do |q|
-          {
+          question_hash = {
             question_text: q['question_text'],
             question_type: q['question_type'],
             required: q['required']
           }
+          question_hash[:options] = q['options'] if q['options'].is_a?(Array) && q['options'].any?
+          question_hash
         end
       }
     rescue => e
@@ -70,13 +72,28 @@ class SurveyAiGenerator
             "question_text": "Rate this from 1-10",
             "question_type": "scale",
             "required": false
+          },
+          {
+            "question_text": "Another question",
+            "question_type": "pick_one",
+            "required": true
+            "options": ["Option 1", "Option 2", "Option 3"]
+          },
+          {
+            "question_text": "Select all that apply",
+            "question_type": "pick_any",
+            "required": false
+            "options": ["Option A", "Option B", "Option C"]
           }
         ]
       }
 
       Rules:
-      - question_type must be either "text" or "scale"
+      - question_type must be either "text", "scale","pick_one", or "pick_any"
+      - pick_one questions must include an "options" array with at least 2 options
+      - pick_any questions must include an "options" array with at least 2 options
       - Scale questions should include "(1 = poor, 10 = excellent)" or similar in the question text
+      - Scale questions should not include an options array
       - Generate 4-6 relevant questions
       - Mix of required and optional questions
       - Make questions specific to the survey topic
@@ -136,8 +153,13 @@ class SurveyAiGenerator
 
     survey['questions'].each_with_index do |question, index|
       raise "Question #{index + 1}: missing question_text" unless question['question_text'].present?
-      raise "Question #{index + 1}: invalid question_type" unless %w[text scale].include?(question['question_type'])
+      raise "Question #{index + 1}: invalid question_type" unless %w[text scale pick_one pick_any].include?(question['question_type'])
       raise "Question #{index + 1}: required must be boolean" unless [true, false].include?(question['required'])
+      if %w[pick_one pick_any].include?(question['question_type'])
+        unless question['options'].is_a?(Array) && question['options'].size >= 2
+          raise "Question #{index + 1}: #{question['question_type']} must have at least two options"
+        end
+      end
     end
   end
 
@@ -332,11 +354,14 @@ class SurveyAiGenerator
     )
 
     data[:questions].each_with_index do |question_data, index|
-      survey.questions.create!(
+      question_hash = {
         question_text: question_data[:question_text],
         question_type: question_data[:question_type],
         required: question_data[:required],
         position: index + 1
+      }
+      survey.questions.create!(
+        question_hash.merge(options: question_data[:options] || question_data[:options_text] || [])
       )
     end
 

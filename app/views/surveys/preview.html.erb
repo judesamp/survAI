@@ -20,14 +20,29 @@
               </p>
 
               <% if question.question_type == "scale" %>
-                <div class="flex items-center space-x-2">
-                  <% (1..10).each do |i| %>
-                    <label class="flex items-center">
-                      <input type="radio" name="question_<%= question.id %>" value="<%= i %>" class="mr-1" disabled>
-                      <%= i %>
-                    </label>
-                  <% end %>
+                <div class="flex items-center space-x-4">
+                  <span class="text-gray-500"><%= (question.settings && question.settings['min_label']) || 1 %></span>
+                  <input type="range" min="1" max="10" disabled class="w-64">
+                  <span class="text-gray-500"><%= (question.settings && question.settings['max_label']) || 10 %></span>
                 </div>
+              <% elsif question.question_type == "pick_one" %>
+                <ul class="space-y-2">
+                  <% (question.options || []).each_with_index do |opt, i| %>
+                    <li class="flex items-center">
+                      <input type="radio" name="question_<%= question.id %>" id="question_<%= question.id %>_opt_<%= i %>" class="mr-2" disabled>
+                      <label for="question_<%= question.id %>_opt_<%= i %>" class="text-gray-700"><%= opt %></label>
+                    </li>
+                  <% end %>
+                </ul>
+              <% elsif question.question_type == "pick_any" %>
+                <ul class="space-y-2">
+                  <% (question.options || []).each_with_index do |opt, i| %>
+                    <li class="flex items-center">
+                      <input type="checkbox" name="question_<%= question.id %>[]" id="question_<%= question.id %>_opt_<%= i %>" class="mr-2" disabled>
+                      <label for="question_<%= question.id %>_opt_<%= i %>" class="text-gray-700"><%= opt %></label>
+                    </li>
+                  <% end %>
+                </ul>
               <% else %>
                 <textarea class="w-full border-gray-300 rounded-md" rows="3" placeholder="Your response..." disabled></textarea>
               <% end %>

@@ -26,7 +26,6 @@
 
       <div class="flex gap-2">
         <%= link_to "📊 Dashboard", dashboard_survey_path(@survey), class: "inline-flex items-center px-3 py-2 border border-indigo-300 shadow-sm text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100" %>
-        <%= link_to "Edit Survey", edit_survey_path(@survey), class: "inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
         <%= link_to "Survey Builder", builder_survey_path(@survey), class: "inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700" %>
       </div>
     </div>
@@ -124,7 +123,8 @@
                   <p class="text-sm text-gray-500">
                     Type: <%= question.question_type.humanize %>
                     <% if question.options.any? %>
-                      • Options: <%= question.options.join(", ") %>
+                      <br>
+                      Options: <%= question.options.join(", ") %>
                     <% end %>
                   </p>
                 </div>

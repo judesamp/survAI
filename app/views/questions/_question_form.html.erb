@@ -14,11 +14,19 @@
         <%= form.select :question_type,
             options_for_select([
               ["Open Ended Text", "text"],
-              ["Sliding Scale (1-10)", "scale"]
+              ["Sliding Scale (1-10)", "scale"],
+              ["Single Answer", "pick_one"],
+              ["Multiple Choice", "pick_any"]
             ], "text"),
             {},
             class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
-            "data-question-type-select": true %>
+            "data-question-type-select": true,
+            onchange: "this.form.querySelectorAll('[data-pick-options]').forEach(el => el.style.display = ['pick_one','pick_any'].includes(this.value) ? 'block' : 'none')" %>
+      </div>
+
+      <div data-pick-options style="display: none;">
+        <%= form.label :options_text, "Options (one per line)", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.text_area :options_text, rows: 3, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Option 1\nOption 2\nOption 3" %>
       </div>
 
       <div>
