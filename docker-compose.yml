@@ -49,6 +49,7 @@ services:
       REDIS_URL: redis://redis:6379/1
       RAILS_ENV: development
       RAILS_LOG_TO_STDOUT: "true"
+      RAILS_MASTER_KEY: 4cd55ff50f3c66334365d7022b872dc9
     stdin_open: true
     tty: true
 
@@ -66,6 +67,7 @@ services:
       - node_modules:/rails/node_modules
     environment:
       RAILS_ENV: development
+      RAILS_MASTER_KEY: 4cd55ff50f3c66334365d7022b872dc9
     tty: true
 
 volumes:

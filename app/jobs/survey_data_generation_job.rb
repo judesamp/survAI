@@ -5,8 +5,12 @@ class SurveyDataGenerationJob < ApplicationJob
     survey = Survey.find(survey_id)
     Rails.logger.info "[JOB #{job_id}] Starting data generation for survey #{survey_id}"
 
-    # Broadcast start message
-    broadcast_progress(survey, "Starting data generation...", 0, job_id)
+    # Calculate total expected items (assignments + responses)
+    total_items = assignments_count + responses_count
+    items_completed = 0
+
+    # Broadcast start message with total context
+    broadcast_progress_with_counts(survey, "Starting data generation...", 0, job_id, 0, total_items)
     sleep(0.5) # Give time for initial broadcast to render
 
     begin
@@ -14,19 +18,22 @@ class SurveyDataGenerationJob < ApplicationJob
 
       # Step 1: Create assignments
       Rails.logger.info "[JOB #{job_id}] Creating #{assignments_count} assignments"
-      broadcast_progress(survey, "Creating assignments...", 20, job_id)
+      broadcast_progress_with_counts(survey, "Creating assignments...", 10, job_id, 0, total_items)
       sleep(0.2)
 
       assignments = generator.create_assignments(assignments_count)
+      items_completed = assignments.count
       Rails.logger.info "[JOB #{job_id}] Created #{assignments.count} assignments"
 
-      broadcast_progress(survey, "Created #{assignments.count} assignments", 40, job_id)
+      # Calculate progress based on assignments created
+      progress = (items_completed.to_f / total_items * 100).to_i
+      broadcast_progress_with_counts(survey, "Created #{assignments.count} assignments", progress, job_id, items_completed, total_items)
       # Dashboard will refresh automatically via Assignment model callbacks
       sleep(0.2)
 
       # Step 2: Generate responses
       Rails.logger.info "[JOB #{job_id}] Generating #{responses_count} responses"
-      broadcast_progress(survey, "Generating responses...", 50, job_id)
+      broadcast_progress_with_counts(survey, "Generating responses...", progress, job_id, items_completed, total_items)
       sleep(0.2)
 
       created_responses = []
@@ -36,11 +43,14 @@ class SurveyDataGenerationJob < ApplicationJob
         response = generator.create_response_for_assignment(assignment)
         created_responses << response if response
 
-        # Update progress incrementally for each response
-        progress = 50 + ((index + 1) * 30 / assignments_for_responses.count)
-        message = "Generated #{index + 1}/#{assignments_for_responses.count} responses"
+        # Update items completed
+        items_completed = assignments_count + (index + 1)
+
+        # Calculate real progress based on total items
+        progress = (items_completed.to_f / total_items * 100).to_i
+        message = "Generated #{index + 1}/#{responses_count} responses"
         Rails.logger.info "[JOB #{job_id}] Progress: #{progress}% - #{message}"
-        broadcast_progress(survey, message, progress, job_id)
+        broadcast_progress_with_counts(survey, message, progress, job_id, items_completed, total_items)
 
         # Dashboard will refresh automatically via Response model callbacks
 
@@ -49,7 +59,7 @@ class SurveyDataGenerationJob < ApplicationJob
       end
 
       Rails.logger.info "[JOB #{job_id}] Finalizing"
-      broadcast_progress(survey, "Finalizing...", 90, job_id)
+      broadcast_progress_with_counts(survey, "Finalizing...", 95, job_id, items_completed, total_items)
       sleep(0.2)
 
       result = {
@@ -69,6 +79,23 @@ class SurveyDataGenerationJob < ApplicationJob
 
   private
 
+  def broadcast_progress_with_counts(survey, message, percentage, job_id, current_count, total_count)
+    stream_name = "survey_#{survey.id}_data_generation"
+    Rails.logger.info "[BROADCAST] Sending to #{stream_name}: #{message} (#{percentage}% - #{current_count}/#{total_count})"
+
+    # Add a timestamp to force DOM updates
+    html_content = render_progress_html_with_counts(message, percentage, job_id, current_count, total_count)
+
+    # Use broadcast_replace_to to ensure the element is fully replaced
+    Turbo::StreamsChannel.broadcast_replace_to(
+      stream_name,
+      target: "data-generation-status",
+      html: html_content
+    )
+
+    Rails.logger.info "[BROADCAST] Sent to #{stream_name} - #{percentage}% complete"
+  end
+
   def broadcast_progress(survey, message, percentage, job_id)
     stream_name = "survey_#{survey.id}_data_generation"
     Rails.logger.info "[BROADCAST] Sending to #{stream_name}: #{message} (#{percentage}%)"
@@ -79,7 +106,7 @@ class SurveyDataGenerationJob < ApplicationJob
     # Use broadcast_replace_to to ensure the element is fully replaced
     Turbo::StreamsChannel.broadcast_replace_to(
       stream_name,
-      target: "data-generation-status-container",
+      target: "data-generation-status",
       html: html_content
     )
 
@@ -95,7 +122,7 @@ class SurveyDataGenerationJob < ApplicationJob
     # Broadcast completion status using html to avoid template wrapper
     Turbo::StreamsChannel.broadcast_replace_to(
       stream_name,
-      target: "data-generation-status-container",
+      target: "data-generation-status",
       html: render_completion_html(result, job_id)
     )
 
@@ -108,7 +135,7 @@ class SurveyDataGenerationJob < ApplicationJob
 
     Turbo::StreamsChannel.broadcast_replace_to(
       stream_name,
-      target: "data-generation-status-container",
+      target: "data-generation-status",
       html: render_error_html(error_message, job_id)
     )
   end
@@ -173,6 +200,32 @@ class SurveyDataGenerationJob < ApplicationJob
       average_completion_time: survey.average_completion_time,
       average_scale_score: survey.average_scale_score,
       assignments_by_status: survey.assignments_by_status
+    }
+  end
+
+  def render_progress_html_with_counts(message, percentage, job_id, current_count, total_count)
+    # Generate a unique ID for each update to force re-rendering
+    update_id = SecureRandom.hex(4)
+    %{
+      <div id="data-generation-status" class="bg-blue-50 border border-blue-200 rounded-lg p-4" data-update-id="#{update_id}" data-percentage="#{percentage}">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center space-x-3">
+            <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-sm font-medium text-blue-900">#{message}</span>
+          </div>
+          <div class="flex items-center space-x-3">
+            <span class="text-sm text-blue-700">#{current_count}/#{total_count}</span>
+            <span class="text-xs text-blue-700 font-medium bg-blue-100 px-2 py-1 rounded">#{percentage}%</span>
+          </div>
+        </div>
+        <div class="w-full bg-blue-200 rounded-full h-2">
+          <div class="bg-blue-600 h-2 rounded-full" style="width: #{percentage}%; transition: width 0.3s ease-out;"></div>
+        </div>
+        <div class="mt-2 text-xs text-blue-600">Job: #{job_id} | Time: #{Time.current.strftime('%H:%M:%S.%L')} | Update: #{update_id}</div>
+      </div>
     }
   end
 
